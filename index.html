@@ -10,6 +10,15 @@
   #app { position: relative; width: 100%; height: 100%; max-width: 520px; margin: 0 auto; background: #12121f; overflow: hidden; }
 
   #home { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  #profileBar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: #1a1a2e; border-bottom: 2px solid #2a2a44; }
+  #profileBar img { width: 40px; height: 40px; border: 2px solid #ffd84a; border-radius: 4px; image-rendering: pixelated; background: #333; object-fit: cover; }
+  #profileBar .nm { font-weight: bold; color: #ffd84a; font-size: 15px; }
+  #profileBar .num { color: #888; font-size: 11px; }
+  #profileBar .tr { margin-left: auto; color: #ffd84a; font-size: 13px; }
+  #syncDot { width: 8px; height: 8px; background: #7CFC7C; border-radius: 50%; margin-left: 6px; }
+  #syncDot.pending { background: #f80; animation: pulse 1s infinite; }
+  #syncDot.error { background: #f33; }
+  @keyframes pulse { 50% { opacity: .3; } }
   #topbar { display: flex; gap: 6px; padding: 10px 10px 6px; background: #0b0b14; border-bottom: 3px solid #2a2a44; font-size: 13px; }
   .res { flex: 1; background: #1c1c30; border: 2px solid #3a3a5c; padding: 5px 6px; text-align: center; white-space: nowrap; }
   .res b { color: #ffd84a; }
@@ -95,6 +104,12 @@
 <div id="app">
 
   <div id="home">
+    <div id="profileBar">
+      <img id="pfAvatar" src="" alt="">
+      <div><div class="nm" id="pfNick">-</div><div class="num" id="pfNum">-</div></div>
+      <div class="tr" id="pfTr">🏆 0</div>
+      <div id="syncDot" title="동기화"></div>
+    </div>
     <div id="topbar">
       <div class="res">🪙 <b id="rCoin">0</b></div>
       <div class="res">💵 <b id="rWorm">0</b></div>
@@ -142,6 +157,38 @@
     </div>
   </div>
   <div id="toast" class="toast hidden"></div>
+
+  <div id="ovSignup" class="overlay hidden">
+    <div class="result-box" style="max-width:340px">
+      <h2 style="color:#7CFC7C">👔 K-사냥맨 시작하기</h2>
+      <p class="small" style="margin:8px 0 14px">닉네임이랑 아바타를 정해줘!</p>
+      <input id="siNick" placeholder="닉네임 (2~12자)" maxlength="12" style="width:100%;padding:10px;font-size:15px;background:#0b0b14;color:#fff;border:2px solid #3a3a5c;margin-bottom:12px;text-align:center">
+      <div style="margin-bottom:12px">
+        <div class="small" style="margin-bottom:6px">아바타 이미지 선택</div>
+        <img id="siAvatarPreview" src="" style="width:80px;height:80px;border:3px solid #ffd84a;image-rendering:pixelated;background:#333;object-fit:cover;display:block;margin:0 auto 8px">
+        <input type="file" id="siFile" accept="image/*" style="width:100%;font-size:12px;color:#ccc">
+      </div>
+      <div class="btn big" id="siGo" style="background:#3b8f3b">✨ 계정 만들기</div>
+      <div class="btn" id="siRestore" style="width:100%;background:#555;margin-top:10px">🔑 복구 코드로 로그인</div>
+    </div>
+  </div>
+
+  <div id="ovRestore" class="overlay hidden">
+    <div class="result-box" style="max-width:340px">
+      <h2>🔑 복구 코드 입력</h2>
+      <p class="small" style="margin:8px 0 14px">다른 기기에 있는 계정의 복구 코드를 입력해!</p>
+      <input id="reCode" placeholder="복구 코드 (24자)" style="width:100%;padding:10px;font-size:14px;background:#0b0b14;color:#fff;border:2px solid #3a3a5c;margin-bottom:12px;text-align:center;font-family:monospace">
+      <div class="btn big blue" id="reGo">불러오기</div>
+      <div class="btn" id="reBack" style="width:100%;background:#555;margin-top:10px">뒤로</div>
+    </div>
+  </div>
+
+  <div id="ovLoading" class="overlay hidden">
+    <div class="result-box">
+      <h2 style="color:#4af">☁️ 로딩 중...</h2>
+      <p class="small" id="loadTxt">계정을 불러오고 있어</p>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -150,11 +197,75 @@
 //  K-사냥맨  — K-직장인 서바이벌 (1챕터)
 // =====================================================================
 
-const SAVE_KEY = 'k_sanyangman_save_v2';
-const DEFAULT_SAVE = { coins: 0, worm: 0, puzzle: 0, upLv: 0, star: 0, lastHunt: Date.now(), bgm: true, sfx: true, clears: 0, best: 0 };
-let S = loadSave();
-function loadSave() { try { const raw = localStorage.getItem(SAVE_KEY); if (raw) return Object.assign({}, DEFAULT_SAVE, JSON.parse(raw)); } catch (e) {} return Object.assign({}, DEFAULT_SAVE); }
-function save() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+// ---------- 계정 (jsonbin.io) ----------
+const BIN_MASTER_KEY = '$2a$10$NIj5ay0LyGnCMs/QyRVyQOQlYNMZ/lvyW7oRqmyjDSYgYX6bb.XH2';
+const BIN_ID_KEY = 'k_sanyangman_binid_v1';
+const SAVE_KEY = 'k_sanyangman_save_v3';
+const DEFAULT_SAVE = {
+  nick: '', num: 0, avatar: '', binId: '',
+  coins: 0, worm: 0, puzzle: 0, upLv: 0, star: 0, lastHunt: Date.now(), bgm: true, sfx: true, clears: 0, best: 0,
+  stats: { plays: 0, totalKills: 0, totalCoins: 0, totalPlayTime: 0, killByAttack: {} },
+  achievements: [], created: 0,
+};
+let S = Object.assign({}, DEFAULT_SAVE);
+
+function loadLocal() { try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = Object.assign({}, DEFAULT_SAVE, JSON.parse(raw)); } catch (e) {} }
+function saveLocal() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+
+async function apiCreate(data) {
+  const r = await fetch('https://api.jsonbin.io/v3/b', {
+    method: 'POST', headers: {'Content-Type': 'application/json', 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Private': 'true'},
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error('create failed');
+  const j = await r.json(); return j.metadata.id;
+}
+async function apiRead(id) {
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${id}/latest`, { headers: {'X-Master-Key': BIN_MASTER_KEY} });
+  if (!r.ok) throw new Error('read failed');
+  const j = await r.json(); return j.record;
+}
+async function apiUpdate(id, data) {
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${id}`, {
+    method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': BIN_MASTER_KEY},
+    body: JSON.stringify(data)
+  });
+  if (!r.ok) throw new Error('update failed');
+}
+
+let syncTimer = null, lastSyncData = '';
+function setSyncStatus(s) { const d = document.getElementById('syncDot'); if (!d) return; d.classList.remove('pending', 'error'); if (s) d.classList.add(s); }
+function save() {
+  saveLocal();
+  if (!S.binId) return;
+  clearTimeout(syncTimer); setSyncStatus('pending');
+  syncTimer = setTimeout(async () => {
+    try {
+      const cur = JSON.stringify(S);
+      if (cur === lastSyncData) { setSyncStatus(null); return; }
+      await apiUpdate(S.binId, S); lastSyncData = cur; setSyncStatus(null);
+    } catch (e) { setSyncStatus('error'); console.warn('sync failed', e); }
+  }, 8000);
+}
+
+// ---------- 업적 ----------
+const ACHIEVEMENTS = {
+  firstWin:   { name: '첫 승리', title: '루키',           desc: '1챕터 첫 클리어',                 check: () => S.clears >= 1 },
+  veteran:    { name: '베테랑', title: '베테랑',           desc: '10회 클리어',                     check: () => S.clears >= 10 },
+  speedrun:   { name: '스피드러너', title: '칼퇴러',       desc: '12분 안에 클리어',                check: (ctx) => ctx && ctx.finishTime && ctx.finishTime <= 12*60 },
+  perfect:    { name: '완벽주의자', title: '무결점 사원',  desc: '체력 100%로 클리어',              check: (ctx) => ctx && ctx.finishHpRatio && ctx.finishHpRatio >= 1.0 },
+  rich:       { name: '부자', title: '재벌',               desc: '코인 10,000 모으기',              check: () => S.coins >= 10000 },
+  superColl:  { name: '슈퍼 컬렉터', title: '만능 대리',   desc: '한 판에 슈퍼 스킬 3개 이상 만들기', check: (ctx) => ctx && ctx.supersCount && ctx.supersCount >= 3 },
+  slaughter:  { name: '학살자', title: '몰살자',           desc: '한 판에 500킬',                   check: (ctx) => ctx && ctx.runKills >= 500 },
+  starMax:    { name: '별 최대', title: '임원',             desc: 'K-직장인 ★6 달성',                 check: () => S.star >= 6 },
+  sniper:     { name: '명사수', title: '저격수',           desc: '사표 던지기로 누적 100킬',        check: () => (S.stats.killByAttack.resign || 0) >= 100 },
+  workaholic: { name: '지구력', title: '야근왕',           desc: '총 플레이 10시간',                check: () => S.stats.totalPlayTime >= 10*3600 },
+};
+function checkAchievements(ctx) {
+  const gained = [];
+  for (const k in ACHIEVEMENTS) if (!S.achievements.includes(k) && ACHIEVEMENTS[k].check(ctx)) { S.achievements.push(k); gained.push(k); }
+  if (gained.length) { save(); gained.forEach((k, i) => setTimeout(() => toast('🏆 업적: ' + ACHIEVEMENTS[k].name), i * 1500)); }
+}
 
 // ---------------- 데이터 ----------------
 const STAR_COST = [30, 50, 70, 100, 120, 150];
@@ -542,7 +653,7 @@ function renderHunt(c) {
       <p class="small">다음 사냥까지 <b id="huntNext">${fmtTime((HUNT_TICK - into) / 1000)}</b></p>
       <div class="stat"><span>쌓인 사냥 횟수</span><b>${ticks}회</b></div>
       <div class="stat"><span>예상 코인</span><b>🪙 ${fmt(ticks * 20)}</b></div>
-      <p class="small">1회당 🪙20 확정 + 💵돈(15%) + 🧩K-직장인 퍼즐(8%)</p>
+      <p class="small">1회당 🪙20 + 💵돈 8~23개 + 🧩K-직장인 퍼즐(8%)</p>
       <div class="btn big ${ticks > 0 ? 'gold' : 'gray'}" id="btnCollect">보상 받기</div>
     </div>
     <canvas id="huntCanvas" width="200" height="90" style="display:block;margin:0 auto;image-rendering:pixelated;border:3px solid #3a5c3a;background:#1a2a1a"></canvas>`;
@@ -550,7 +661,7 @@ function renderHunt(c) {
   $('#btnCollect').addEventListener('click', () => {
     const t = huntTicks(); if (t <= 0) return toast('아직 쌓인 보상이 없어!');
     let coins = t * 20, worm = 0, puz = 0;
-    for (let i = 0; i < t; i++) { if (Math.random() < .15) worm++; if (Math.random() < .08) puz++; }
+    for (let i = 0; i < t; i++) { worm += 8 + (Math.random() < .3 ? ri(5, 15) : 0); if (Math.random() < .08) puz++; }
     S.coins += coins; S.worm += worm; S.puzzle += puz;
     S.lastHunt = Date.now() - ((Date.now() - S.lastHunt) % HUNT_TICK); if (huntTicks() >= HUNT_MAX) S.lastHunt = Date.now();
     save(); toast(`🪙${coins} 💵${worm} 🧩${puz} 획득!`); showTab('hunt');
@@ -584,7 +695,33 @@ function renderSettings(c) {
       </table>
     </div>
     <div class="card"><h3>🎮 조작법</h3><p>화면을 누르고 끌면 그 방향으로 이동. 공격은 전부 자동!</p></div>
-    <div class="card"><div class="btn" style="background:#a33" id="btnReset">💀 데이터 초기화</div></div>`;
+    <div class="card">
+      <h3>👤 계정</h3>
+      ${S.binId ? `<div class="stat"><span>닉네임</span><b>${S.nick} #${String(S.num).padStart(4,'0')}</b></div>
+      <div class="stat"><span>가입일</span><b>${S.created ? new Date(S.created).toLocaleDateString('ko-KR') : '-'}</b></div>
+      <p class="small" style="margin:8px 0 4px;color:#ffd84a">🔑 복구 코드 (다른 기기에서 사용)</p>
+      <div style="background:#0b0b14;padding:8px;border:2px solid #3a3a5c;font-family:monospace;font-size:11px;word-break:break-all">${S.binId}</div>
+      <div class="btn" id="btnCopyCode" style="background:#2f6fd9;margin-top:6px">📋 복사</div>
+      <div class="btn" id="btnLogout" style="background:#a33;margin-top:6px">로그아웃</div>` : '<p class="small">로그인되지 않음</p>'}
+    </div>
+    <div class="card">
+      <h3>🏆 업적 (${(S.achievements||[]).length}/${Object.keys(ACHIEVEMENTS).length})</h3>
+      ${Object.entries(ACHIEVEMENTS).map(([k,a]) => { const g = (S.achievements||[]).includes(k); return `<div class="stat" style="${g?'color:#ffd84a':'color:#666'}"><span>${g?'🏆':'🔒'} ${a.name} <span class="small">— ${a.desc}</span></span><b>${a.title}</b></div>`; }).join('')}
+    </div>
+    <div class="card">
+      <h3>📊 전적</h3>
+      <div class="stat"><span>총 플레이</span><b>${(S.stats.plays||0)}회</b></div>
+      <div class="stat"><span>총 클리어</span><b>${S.clears||0}회</b></div>
+      <div class="stat"><span>최고 기록</span><b>${fmtTime(S.best||0)}</b></div>
+      <div class="stat"><span>총 처치</span><b>${(S.stats.totalKills||0).toLocaleString('ko-KR')}마리</b></div>
+      <div class="stat"><span>총 획득 코인</span><b>🪙 ${(S.stats.totalCoins||0).toLocaleString('ko-KR')}</b></div>
+      <div class="stat"><span>총 플레이 시간</span><b>${Math.floor((S.stats.totalPlayTime||0)/60)}분</b></div>
+    </div>
+    <div class="card"><div class="btn" style="background:#a33" id="btnReset">💀 로컬 데이터 초기화</div></div>`;
+  const bc = document.getElementById('btnCopyCode');
+  if (bc) bc.addEventListener('click', () => { try { navigator.clipboard.writeText(S.binId); toast('복사됨!'); } catch (e) { toast(S.binId); } });
+  const bl = document.getElementById('btnLogout');
+  if (bl) { let ar = false; bl.addEventListener('click', () => { if (!ar) { ar = true; bl.textContent = '진짜? 복구 코드는 저장했어? 다시 누르면 로그아웃'; return; } localStorage.removeItem(BIN_ID_KEY); localStorage.removeItem(SAVE_KEY); S = Object.assign({}, DEFAULT_SAVE); showSignup(); }); }
   $('#swBgm').addEventListener('click', e => { S.bgm = !S.bgm; e.target.classList.toggle('on', S.bgm); save(); audio.updateBgm(); });
   $('#swSfx').addEventListener('click', e => { S.sfx = !S.sfx; e.target.classList.toggle('on', S.sfx); save(); });
   let resetArm = false;
@@ -657,19 +794,32 @@ function endRun(win) {
   if (!run || run.over) return; run.over = true; audio.stopBgm();
   const lines = [];
   const coinMul = 1 + (run.defs.stock || 0) * 0.05;
+  let coins = 0;
   if (win) {
     const puz = Math.random() < .35 ? 1 : 0, worm = 2;
-    const coins = Math.floor(500 * coinMul);
+    coins = Math.floor(500 * coinMul);
     S.coins += coins; S.worm += worm; S.puzzle += puz; S.clears++; S.best = RUN_LEN;
     lines.push(`🪙 코인 +${coins}`, `💵 돈 +${worm}`); if (puz) lines.push('🧩 K-직장인 퍼즐 +1');
     $('#resTitle').textContent = '🏆 1챕터 클리어!'; $('#resTitle').style.color = '#ffd84a';
   } else {
-    const coins = Math.floor(run.t / 3 * coinMul);
+    coins = Math.floor(run.t / 3 * coinMul);
     S.coins += coins; if (run.t > S.best) S.best = Math.floor(run.t);
     lines.push(`⏱️ 생존 ${fmtTime(run.t)}`, `👾 처치 ${run.kills}`, `🪙 코인 +${coins}`);
     $('#resTitle').textContent = '💀 쓰러졌다...'; $('#resTitle').style.color = '#e55';
   }
+  // stats 업데이트
+  if (!S.stats) S.stats = { plays: 0, totalKills: 0, totalCoins: 0, totalPlayTime: 0, killByAttack: {} };
+  if (!S.stats.killByAttack) S.stats.killByAttack = {};
+  S.stats.plays++;
+  S.stats.totalKills += run.kills;
+  S.stats.totalCoins += coins;
+  S.stats.totalPlayTime += Math.floor(run.t);
+  for (const k in run.killBy) S.stats.killByAttack[k] = (S.stats.killByAttack[k] || 0) + run.killBy[k];
+  // 업적 체크
+  const supersCount = Object.values(run.sup).filter(Boolean).length;
+  checkAchievements({ finishTime: win ? Math.floor(run.t) : null, finishHpRatio: win ? run.p.hp / run.p.maxHp : 0, supersCount, runKills: run.kills });
   save();
+  updateProfileBar();
   $('#resLines').innerHTML = lines.map(l => `<div class="line">${l}</div>`).join('');
   $('#ovResult').classList.remove('hidden');
 }
@@ -1557,7 +1707,116 @@ function loop(now) {
   if (run) draw();
 }
 
-showTab('home');
+// ---------- 초기화 ----------
+async function boot() {
+  loadLocal();
+  const binId = localStorage.getItem(BIN_ID_KEY);
+  if (!binId) { showSignup(); return; }
+  document.getElementById('ovLoading').classList.remove('hidden');
+  document.getElementById('loadTxt').textContent = '계정을 불러오고 있어';
+  try {
+    const data = await apiRead(binId);
+    S = Object.assign({}, DEFAULT_SAVE, data, { binId });
+    lastSyncData = JSON.stringify(S);
+    saveLocal();
+    document.getElementById('ovLoading').classList.add('hidden');
+    updateProfileBar(); showTab('home');
+  } catch (e) {
+    document.getElementById('ovLoading').classList.add('hidden');
+    toast('❌ 계정 불러오기 실패, 로컬로 진행');
+    updateProfileBar(); showTab('home');
+  }
+}
+
+function updateProfileBar() {
+  document.getElementById('pfAvatar').src = S.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="%23345"/><text x="20" y="27" text-anchor="middle" font-size="20" fill="%23fff">👔</text></svg>';
+  document.getElementById('pfNick').textContent = S.nick || '게스트';
+  document.getElementById('pfNum').textContent = S.num ? '#' + String(S.num).padStart(4, '0') : '';
+  document.getElementById('pfTr').textContent = '🏆 ' + (S.achievements || []).length + '/' + Object.keys(ACHIEVEMENTS).length;
+}
+
+// ---------- 이미지 리사이즈 ----------
+function resizeImg(file, size) {
+  return new Promise((res, rej) => {
+    const rd = new FileReader();
+    rd.onerror = rej;
+    rd.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width = c.height = size;
+        const ctx2 = c.getContext('2d');
+        const s = Math.min(img.width, img.height);
+        const ox = (img.width - s) / 2, oy = (img.height - s) / 2;
+        ctx2.drawImage(img, ox, oy, s, s, 0, 0, size, size);
+        res(c.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = rej;
+      img.src = e.target.result;
+    };
+    rd.readAsDataURL(file);
+  });
+}
+
+// ---------- 가입 화면 ----------
+let siAvatarData = '';
+function showSignup() {
+  document.getElementById('ovSignup').classList.remove('hidden');
+  const def = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="%23345"/><text x="40" y="52" text-anchor="middle" font-size="36" fill="%23fff">👔</text></svg>';
+  document.getElementById('siAvatarPreview').src = def;
+  siAvatarData = '';
+}
+document.getElementById('siFile').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  if (f.size > 5 * 1024 * 1024) return toast('파일이 너무 커! 5MB 이하로');
+  try { siAvatarData = await resizeImg(f, 128); document.getElementById('siAvatarPreview').src = siAvatarData; } catch (err) { toast('이미지 오류'); }
+});
+document.getElementById('siGo').addEventListener('click', async () => {
+  const nick = document.getElementById('siNick').value.trim();
+  if (nick.length < 2) return toast('닉네임은 2자 이상!');
+  const btn = document.getElementById('siGo'); btn.textContent = '만드는 중...'; btn.classList.add('disabled');
+  const data = Object.assign({}, DEFAULT_SAVE, {
+    nick, num: Math.floor(Math.random() * 9000) + 1000, avatar: siAvatarData, created: Date.now(), lastHunt: Date.now(),
+  });
+  try {
+    const id = await apiCreate(data);
+    data.binId = id;
+    S = data; lastSyncData = JSON.stringify(S); saveLocal();
+    localStorage.setItem(BIN_ID_KEY, id);
+    document.getElementById('ovSignup').classList.add('hidden');
+    updateProfileBar(); showTab('home');
+    toast('✨ ' + nick + ' 환영해!');
+  } catch (e) {
+    btn.textContent = '✨ 계정 만들기'; btn.classList.remove('disabled');
+    toast('❌ 서버 오류, 다시 시도해!');
+  }
+});
+document.getElementById('siRestore').addEventListener('click', () => {
+  document.getElementById('ovSignup').classList.add('hidden');
+  document.getElementById('ovRestore').classList.remove('hidden');
+});
+document.getElementById('reBack').addEventListener('click', () => {
+  document.getElementById('ovRestore').classList.add('hidden');
+  document.getElementById('ovSignup').classList.remove('hidden');
+});
+document.getElementById('reGo').addEventListener('click', async () => {
+  const code = document.getElementById('reCode').value.trim();
+  if (code.length < 10) return toast('올바른 복구 코드가 아니야');
+  const btn = document.getElementById('reGo'); btn.textContent = '불러오는 중...'; btn.classList.add('disabled');
+  try {
+    const data = await apiRead(code);
+    S = Object.assign({}, DEFAULT_SAVE, data, { binId: code });
+    lastSyncData = JSON.stringify(S); saveLocal();
+    localStorage.setItem(BIN_ID_KEY, code);
+    document.getElementById('ovRestore').classList.add('hidden');
+    updateProfileBar(); showTab('home');
+    toast('✅ ' + S.nick + '님 환영!');
+  } catch (e) {
+    btn.textContent = '불러오기'; btn.classList.remove('disabled');
+    toast('❌ 복구 코드가 잘못됨');
+  }
+});
+
+boot();
 </script>
 </body>
 </html>
