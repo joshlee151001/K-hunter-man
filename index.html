@@ -19,6 +19,17 @@
   #syncDot.pending { background: #f80; animation: pulse 1s infinite; }
   #syncDot.error { background: #f33; }
   @keyframes pulse { 50% { opacity: .3; } }
+  .inp { width: 100%; padding: 10px; font-size: 15px; background: #0b0b14; color: #fff; border: 2px solid #3a3a5c; margin: 4px 0 12px; }
+  .inp:focus { outline: none; border-color: #ffd84a; }
+  .pwwrap { position: relative; }
+  .pwwrap .inp { padding-right: 40px; }
+  .pwwrap .eye { position: absolute; right: 10px; top: 14px; cursor: pointer; font-size: 18px; user-select: none; opacity: .8; }
+  .pwwrap .eye.off { opacity: .35; }
+  .avgrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 6px 0; }
+  .avgrid img { width: 100%; aspect-ratio: 1; border: 3px solid #3a3a5c; background: #222; cursor: pointer; image-rendering: pixelated; }
+  .avgrid img.sel { border-color: #ffd84a; box-shadow: 0 0 8px #ffd84a; }
+  .avprev { width: 64px; height: 64px; border: 3px solid #ffd84a; background: #333; object-fit: cover; image-rendering: pixelated; }
+  #profileBar { cursor: pointer; }
   #topbar { display: flex; gap: 6px; padding: 10px 10px 6px; background: #0b0b14; border-bottom: 3px solid #2a2a44; font-size: 13px; }
   .res { flex: 1; background: #1c1c30; border: 2px solid #3a3a5c; padding: 5px 6px; text-align: center; white-space: nowrap; }
   .res b { color: #ffd84a; }
@@ -158,29 +169,63 @@
   </div>
   <div id="toast" class="toast hidden"></div>
 
-  <div id="ovSignup" class="overlay hidden">
+  <!-- 시작 화면 -->
+  <div id="ovStart" class="overlay hidden">
     <div class="result-box" style="max-width:340px">
-      <h2 style="color:#7CFC7C">👔 K-사냥맨 시작하기</h2>
-      <p class="small" style="margin:8px 0 14px">닉네임이랑 아바타를 정해줘!</p>
-      <input id="siNick" placeholder="닉네임 (2~12자)" maxlength="12" style="width:100%;padding:10px;font-size:15px;background:#0b0b14;color:#fff;border:2px solid #3a3a5c;margin-bottom:12px;text-align:center">
-      <div style="margin-bottom:12px">
-        <div class="small" style="margin-bottom:6px">아바타 이미지 선택</div>
-        <img id="siAvatarPreview" src="" style="width:80px;height:80px;border:3px solid #ffd84a;image-rendering:pixelated;background:#333;object-fit:cover;display:block;margin:0 auto 8px">
-        <input type="file" id="siFile" accept="image/*" style="width:100%;font-size:12px;color:#ccc">
-      </div>
-      <div class="btn big" id="siGo" style="background:#3b8f3b">✨ 계정 만들기</div>
-      <div class="btn" id="siRestore" style="width:100%;background:#555;margin-top:10px">🔑 복구 코드로 로그인</div>
+      <div class="pixel-title" style="font-size:30px">K-사냥맨</div>
+      <p class="small" style="margin:6px 0 18px">서울을 지키는 K-직장인 👔</p>
+      <div class="btn big" id="stNew" style="background:#3b8f3b">✨ 새 계정 만들기</div>
+      <div class="btn big blue" id="stLogin" style="margin-top:10px">🔐 기존 계정 로그인</div>
     </div>
   </div>
 
+  <!-- 가입 -->
+  <div id="ovSignup" class="overlay hidden">
+    <div class="result-box" style="max-width:360px;text-align:left">
+      <h2 style="color:#7CFC7C;text-align:center">✨ 새 계정 만들기</h2>
+      <label class="small">닉네임 (2~12자)</label>
+      <input id="siNick" class="inp" placeholder="닉네임" maxlength="12">
+      <label class="small">비밀번호 (4자 이상)</label>
+      <div class="pwwrap"><input id="siPw" class="inp" type="password" placeholder="비밀번호" maxlength="32"><span class="eye" data-for="siPw">👁️</span></div>
+      <label class="small">아바타 — 하나 골라 (또는 사진 올리기)</label>
+      <div class="avgrid" id="siAvGrid"></div>
+      <div class="row" style="margin-top:6px;align-items:center">
+        <img id="siAvatarPreview" class="avprev" src="" alt="">
+        <input type="file" id="siFile" accept="image/*" style="flex:1;font-size:12px;color:#ccc">
+      </div>
+      <div class="btn big" id="siGo" style="background:#3b8f3b;margin-top:14px">계정 만들기</div>
+      <div class="btn" id="siBack" style="width:100%;background:#555;margin-top:8px;text-align:center">뒤로</div>
+    </div>
+  </div>
+
+  <!-- 로그인 -->
+  <div id="ovLogin" class="overlay hidden">
+    <div class="result-box" style="max-width:340px;text-align:left">
+      <h2 style="text-align:center">🔐 기존 계정 로그인</h2>
+      <label class="small">닉네임</label>
+      <input id="liNick" class="inp" placeholder="닉네임" maxlength="12">
+      <label class="small">비밀번호</label>
+      <div class="pwwrap"><input id="liPw" class="inp" type="password" placeholder="비밀번호" maxlength="32"><span class="eye" data-for="liPw">👁️</span></div>
+      <div class="btn big blue" id="liGo" style="margin-top:14px">로그인</div>
+      <div class="btn" id="liBack" style="width:100%;background:#555;margin-top:8px;text-align:center">뒤로</div>
+      <p class="small" style="text-align:center;margin-top:12px"><span id="liRestore" style="color:#8a8ab0;text-decoration:underline;cursor:pointer">비밀번호를 잊었어? 복구 코드로 로그인</span></p>
+    </div>
+  </div>
+
+  <!-- 복구 코드 -->
   <div id="ovRestore" class="overlay hidden">
     <div class="result-box" style="max-width:340px">
-      <h2>🔑 복구 코드 입력</h2>
-      <p class="small" style="margin:8px 0 14px">다른 기기에 있는 계정의 복구 코드를 입력해!</p>
-      <input id="reCode" placeholder="복구 코드 (24자)" style="width:100%;padding:10px;font-size:14px;background:#0b0b14;color:#fff;border:2px solid #3a3a5c;margin-bottom:12px;text-align:center;font-family:monospace">
+      <h2>🔑 복구 코드</h2>
+      <p class="small" style="margin:8px 0 14px">계정 화면에 있는 복구 코드를 입력해</p>
+      <input id="reCode" class="inp" placeholder="복구 코드 (24자)" style="text-align:center;font-family:monospace">
       <div class="btn big blue" id="reGo">불러오기</div>
       <div class="btn" id="reBack" style="width:100%;background:#555;margin-top:10px">뒤로</div>
     </div>
+  </div>
+
+  <!-- 계정 화면 -->
+  <div id="ovAccount" class="overlay hidden">
+    <div class="result-box" style="max-width:380px;text-align:left" id="acBox"></div>
   </div>
 
   <div id="ovLoading" class="overlay hidden">
@@ -205,7 +250,7 @@ const DEFAULT_SAVE = {
   nick: '', num: 0, avatar: '', binId: '',
   coins: 0, worm: 0, puzzle: 0, upLv: 0, star: 0, lastHunt: Date.now(), bgm: true, sfx: true, clears: 0, best: 0,
   stats: { plays: 0, totalKills: 0, totalCoins: 0, totalPlayTime: 0, killByAttack: {} },
-  achievements: [], created: 0,
+  achievements: [], created: 0, pw: '', updatedAt: 0,
 };
 let S = Object.assign({}, DEFAULT_SAVE);
 
@@ -236,6 +281,7 @@ async function apiUpdate(id, data) {
 let syncTimer = null, lastSyncData = '';
 function setSyncStatus(s) { const d = document.getElementById('syncDot'); if (!d) return; d.classList.remove('pending', 'error'); if (s) d.classList.add(s); }
 function save() {
+  S.updatedAt = Date.now();
   saveLocal();
   if (!S.binId) return;
   clearTimeout(syncTimer); setSyncStatus('pending');
@@ -578,7 +624,8 @@ function renderHome(c) {
       <p>15분 동안 살아남아라! 5분엔 <b>비리 부장</b>, 10분엔 <b>쥐 왕</b>, 15분엔 <b style="color:#ffd84a">AI 대체 로봇</b>!<br>
       <span class="small">클리어 보상: 🪙500 + 💵돈 + 확률로 🧩퍼즐</span></p>
       <div class="btn big" id="btnStart">⚔️ 출근! (메인도전)</div>
-    </div>`;
+    </div>
+    <div class="card" style="padding:8px 12px"><p class="small">🎯 사냥 중... 지금까지 <b style="color:#ffd84a">🪙${fmt(huntPreview(huntTicks()).coins)}</b> · <b style="color:#ffd84a">💵약 ${fmt(huntPreview(huntTicks()).worm)}</b> 쌓임 → 사냥 탭에서 받기</p></div>`;
   drawHero($('#heroCanvas'));
   $('#btnStart').addEventListener('click', () => { audio.init(); startRun(); });
 }
@@ -640,38 +687,51 @@ function renderSquad(c) {
 }
 
 // ---------- 사냥 ----------
-const HUNT_TICK = 10 * 60 * 1000, HUNT_MAX = 5 * 24 * 6;
+const HUNT_TICK = 60 * 1000, HUNT_MAX = 5 * 24 * 60; // 1분 1회, 최대 5일
 function huntTicks() { return Math.min(HUNT_MAX, Math.floor((Date.now() - S.lastHunt) / HUNT_TICK)); }
 let huntTimer = null;
+function huntPreview(t) { return { coins: t * 2, worm: Math.round(t * 1.3), puz: t * 0.008 }; }
 function renderHunt(c) {
-  const ticks = huntTicks();
-  const into = (Date.now() - S.lastHunt) % HUNT_TICK;
   c.innerHTML = `<h2>🎯 사냥 (순찰)</h2>
     <div class="card">
-      <p>K-직장인이 서울을 순찰하며 자동으로 벌레를 사냥해. 가만히 있어도 10분마다 보상이 쌓여! (최대 5일)</p>
-      <div class="bar"><div id="huntBar" style="width:${(into / HUNT_TICK * 100).toFixed(1)}%"></div></div>
-      <p class="small">다음 사냥까지 <b id="huntNext">${fmtTime((HUNT_TICK - into) / 1000)}</b></p>
-      <div class="stat"><span>쌓인 사냥 횟수</span><b>${ticks}회</b></div>
-      <div class="stat"><span>예상 코인</span><b>🪙 ${fmt(ticks * 20)}</b></div>
-      <p class="small">1회당 🪙20 + 💵돈 8~23개 + 🧩K-직장인 퍼즐(8%)</p>
-      <div class="btn big ${ticks > 0 ? 'gold' : 'gray'}" id="btnCollect">보상 받기</div>
+      <p>K-직장인이 서울을 순찰하며 자동으로 벌레를 사냥해. <b>앱을 꺼도, 다른 탭에 있어도</b> 1분마다 보상이 계속 쌓여! (최대 5일)</p>
+      <div class="bar"><div id="huntBar" style="width:0%"></div></div>
+      <p class="small">다음 보상까지 <b id="huntNext">--:--</b></p>
+      <div class="stat"><span>⏱️ 사냥한 시간</span><b id="huntT">-</b></div>
+      <div class="stat"><span>🪙 쌓인 코인</span><b id="huntC">-</b></div>
+      <div class="stat"><span>💵 쌓인 돈 (예상)</span><b id="huntW">-</b></div>
+      <div class="stat"><span>🧩 퍼즐 (확률)</span><b id="huntP">-</b></div>
+      <p class="small">1분당 🪙2 + 💵돈 1~2개 + 🧩퍼즐 0.8%</p>
+      <div class="btn big gold" id="btnCollect">보상 받기</div>
     </div>
     <canvas id="huntCanvas" width="200" height="90" style="display:block;margin:0 auto;image-rendering:pixelated;border:3px solid #3a5c3a;background:#1a2a1a"></canvas>`;
   const hc = $('#huntCanvas'), hctx = hc.getContext('2d');
   $('#btnCollect').addEventListener('click', () => {
-    const t = huntTicks(); if (t <= 0) return toast('아직 쌓인 보상이 없어!');
-    let coins = t * 20, worm = 0, puz = 0;
-    for (let i = 0; i < t; i++) { worm += 8 + (Math.random() < .3 ? ri(5, 15) : 0); if (Math.random() < .08) puz++; }
+    const t = huntTicks(); if (t <= 0) return toast('아직 1분도 안 지났어!');
+    let coins = t * 2, worm = 0, puz = 0;
+    for (let i = 0; i < t; i++) { worm += 1 + (Math.random() < .3 ? 1 : 0); if (Math.random() < .008) puz++; }
     S.coins += coins; S.worm += worm; S.puzzle += puz;
+    if (!S.stats) S.stats = Object.assign({}, DEFAULT_SAVE.stats); S.stats.totalCoins = (S.stats.totalCoins || 0) + coins;
     S.lastHunt = Date.now() - ((Date.now() - S.lastHunt) % HUNT_TICK); if (huntTicks() >= HUNT_MAX) S.lastHunt = Date.now();
-    save(); toast(`🪙${coins} 💵${worm} 🧩${puz} 획득!`); showTab('hunt');
+    save(); checkAchievements(); toast(`🪙${coins} 💵${worm} 🧩${puz} 획득!`); showTab('hunt');
   });
   clearInterval(huntTimer);
   let hx = 30, hdir = 1;
+  const refresh = () => {
+    const t = huntTicks(), into = (Date.now() - S.lastHunt) % HUNT_TICK, pv = huntPreview(t);
+    const b = $('#huntBar'); if (!b) return;
+    b.style.width = (into / HUNT_TICK * 100).toFixed(1) + '%';
+    $('#huntNext').textContent = fmtTime((HUNT_TICK - into) / 1000);
+    $('#huntT').textContent = t >= 60 ? `${Math.floor(t/60)}시간 ${t%60}분` : `${t}분`;
+    $('#huntC').textContent = '🪙 ' + fmt(pv.coins);
+    $('#huntW').textContent = '💵 약 ' + fmt(pv.worm);
+    $('#huntP').textContent = pv.puz >= 1 ? '🧩 약 ' + pv.puz.toFixed(1) : (t > 0 ? (pv.puz * 100).toFixed(0) + '%' : '-');
+    $('#btnCollect').classList.toggle('gray', t <= 0); $('#btnCollect').classList.toggle('gold', t > 0);
+  };
+  refresh();
   huntTimer = setInterval(() => {
     if (curTab !== 'hunt') { clearInterval(huntTimer); return; }
-    const into2 = (Date.now() - S.lastHunt) % HUNT_TICK;
-    const b = $('#huntBar'), n = $('#huntNext'); if (b) b.style.width = (into2 / HUNT_TICK * 100).toFixed(1) + '%'; if (n) n.textContent = fmtTime((HUNT_TICK - into2) / 1000);
+    refresh();
     hctx.imageSmoothingEnabled = false; hctx.fillStyle = '#1a2a1a'; hctx.fillRect(0, 0, 200, 90);
     hctx.fillStyle = '#243'; hctx.fillRect(0, 65, 200, 25);
     hctx.fillStyle = '#ffd84a'; for (let x=0;x<200;x+=10) hctx.fillRect(x, 75, 5, 1);
@@ -695,15 +755,7 @@ function renderSettings(c) {
       </table>
     </div>
     <div class="card"><h3>🎮 조작법</h3><p>화면을 누르고 끌면 그 방향으로 이동. 공격은 전부 자동!</p></div>
-    <div class="card">
-      <h3>👤 계정</h3>
-      ${S.binId ? `<div class="stat"><span>닉네임</span><b>${S.nick} #${String(S.num).padStart(4,'0')}</b></div>
-      <div class="stat"><span>가입일</span><b>${S.created ? new Date(S.created).toLocaleDateString('ko-KR') : '-'}</b></div>
-      <p class="small" style="margin:8px 0 4px;color:#ffd84a">🔑 복구 코드 (다른 기기에서 사용)</p>
-      <div style="background:#0b0b14;padding:8px;border:2px solid #3a3a5c;font-family:monospace;font-size:11px;word-break:break-all">${S.binId}</div>
-      <div class="btn" id="btnCopyCode" style="background:#2f6fd9;margin-top:6px">📋 복사</div>
-      <div class="btn" id="btnLogout" style="background:#a33;margin-top:6px">로그아웃</div>` : '<p class="small">로그인되지 않음</p>'}
-    </div>
+    <div class="card"><h3>👤 계정</h3><p class="small">닉네임/아바타/비밀번호 변경, 복구 코드, 로그아웃은 왼쪽 위 프로필을 눌러!</p><div class="btn blue" id="btnAcc">계정 화면 열기</div></div>
     <div class="card">
       <h3>🏆 업적 (${(S.achievements||[]).length}/${Object.keys(ACHIEVEMENTS).length})</h3>
       ${Object.entries(ACHIEVEMENTS).map(([k,a]) => { const g = (S.achievements||[]).includes(k); return `<div class="stat" style="${g?'color:#ffd84a':'color:#666'}"><span>${g?'🏆':'🔒'} ${a.name} <span class="small">— ${a.desc}</span></span><b>${a.title}</b></div>`; }).join('')}
@@ -717,15 +769,12 @@ function renderSettings(c) {
       <div class="stat"><span>총 획득 코인</span><b>🪙 ${(S.stats.totalCoins||0).toLocaleString('ko-KR')}</b></div>
       <div class="stat"><span>총 플레이 시간</span><b>${Math.floor((S.stats.totalPlayTime||0)/60)}분</b></div>
     </div>
-    <div class="card"><div class="btn" style="background:#a33" id="btnReset">💀 로컬 데이터 초기화</div></div>`;
-  const bc = document.getElementById('btnCopyCode');
-  if (bc) bc.addEventListener('click', () => { try { navigator.clipboard.writeText(S.binId); toast('복사됨!'); } catch (e) { toast(S.binId); } });
-  const bl = document.getElementById('btnLogout');
-  if (bl) { let ar = false; bl.addEventListener('click', () => { if (!ar) { ar = true; bl.textContent = '진짜? 복구 코드는 저장했어? 다시 누르면 로그아웃'; return; } localStorage.removeItem(BIN_ID_KEY); localStorage.removeItem(SAVE_KEY); S = Object.assign({}, DEFAULT_SAVE); showSignup(); }); }
+    <div class="card"><div class="btn" style="background:#a33" id="btnReset">💀 게임 진행 초기화 (계정 유지)</div></div>`;
+  const ba = document.getElementById('btnAcc'); if (ba) ba.addEventListener('click', () => { if (S.binId) showAccount(); else showOv('ovStart'); });
   $('#swBgm').addEventListener('click', e => { S.bgm = !S.bgm; e.target.classList.toggle('on', S.bgm); save(); audio.updateBgm(); });
   $('#swSfx').addEventListener('click', e => { S.sfx = !S.sfx; e.target.classList.toggle('on', S.sfx); save(); });
   let resetArm = false;
-  $('#btnReset').addEventListener('click', e => { if (!resetArm) { resetArm = true; e.target.textContent = '진짜 지울까? 다시 누르면 삭제!'; return; } S = Object.assign({}, DEFAULT_SAVE); save(); toast('초기화 완료'); showTab('home'); });
+  $('#btnReset').addEventListener('click', e => { if (!resetArm) { resetArm = true; e.target.textContent = '진짜 지울까? 다시 누르면 삭제!'; return; } const keep = { nick: S.nick, num: S.num, avatar: S.avatar, pw: S.pw, binId: S.binId, created: S.created }; S = Object.assign({}, DEFAULT_SAVE, keep, { lastHunt: Date.now() }); save(); toast('게임 데이터 초기화 완료 (계정은 유지)'); showTab('home'); });
 }
 
 // =====================================================================
@@ -1708,113 +1757,202 @@ function loop(now) {
 }
 
 // ---------- 초기화 ----------
+const BIN_PREFIX = 'KSM|';
 async function boot() {
   loadLocal();
   const binId = localStorage.getItem(BIN_ID_KEY);
-  if (!binId) { showSignup(); return; }
-  document.getElementById('ovLoading').classList.remove('hidden');
-  document.getElementById('loadTxt').textContent = '계정을 불러오고 있어';
+  if (!binId) { showOv('ovStart'); return; }
+  showOv('ovLoading'); $('#loadTxt').textContent = '계정을 불러오고 있어';
   try {
     const data = await apiRead(binId);
-    S = Object.assign({}, DEFAULT_SAVE, data, { binId });
-    lastSyncData = JSON.stringify(S);
-    saveLocal();
-    document.getElementById('ovLoading').classList.add('hidden');
-    updateProfileBar(); showTab('home');
-  } catch (e) {
-    document.getElementById('ovLoading').classList.add('hidden');
-    toast('❌ 계정 불러오기 실패, 로컬로 진행');
-    updateProfileBar(); showTab('home');
-  }
+    // 로컬이 더 최신이면 로컬 우선 (동기화 전에 닫은 경우 대비)
+    if (S.binId === binId && (S.updatedAt || 0) > (data.updatedAt || 0)) { save(); }
+    else { S = Object.assign({}, DEFAULT_SAVE, data, { binId }); lastSyncData = JSON.stringify(S); saveLocal(); }
+  } catch (e) { toast('☁️ 서버 연결 실패, 로컬 데이터로 진행'); }
+  hideOv('ovLoading'); updateProfileBar(); showTab('home');
 }
+function showOv(id) { document.querySelectorAll('.overlay').forEach(o => { if (['ovLevel','ovPause','ovResult'].includes(o.id)) return; o.classList.add('hidden'); }); $('#' + id).classList.remove('hidden'); }
+function hideOv(id) { $('#' + id).classList.add('hidden'); }
 
 function updateProfileBar() {
-  document.getElementById('pfAvatar').src = S.avatar || 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><rect width="40" height="40" fill="%23345"/><text x="20" y="27" text-anchor="middle" font-size="20" fill="%23fff">👔</text></svg>';
-  document.getElementById('pfNick').textContent = S.nick || '게스트';
-  document.getElementById('pfNum').textContent = S.num ? '#' + String(S.num).padStart(4, '0') : '';
-  document.getElementById('pfTr').textContent = '🏆 ' + (S.achievements || []).length + '/' + Object.keys(ACHIEVEMENTS).length;
+  $('#pfAvatar').src = S.avatar || emojiAvatar('👔');
+  $('#pfNick').textContent = S.nick || '게스트';
+  $('#pfNum').textContent = S.num ? '#' + String(S.num).padStart(4, '0') : '';
+  $('#pfTr').textContent = '🏆 ' + (S.achievements || []).length + '/' + Object.keys(ACHIEVEMENTS).length;
 }
+$('#profileBar').addEventListener('click', () => { if (S.binId) showAccount(); });
 
-// ---------- 이미지 리사이즈 ----------
+// ---------- 아바타 ----------
+const PRESET_AVATARS = ['👔', '🕴️', '👩‍💼', '🧑‍💻', '🥷', '🤠', '🧙‍♀️', '🦸‍♂️'];
+const _avCache = {};
+function emojiAvatar(emo) {
+  if (_avCache[emo]) return _avCache[emo];
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  const bg = ['#2a4a80', '#3b8f3b', '#8a3060', '#b58a1c', '#2f6fd9', '#5a3a1a', '#3a6a3a', '#a33'][PRESET_AVATARS.indexOf(emo) % 8] || '#345';
+  x.fillStyle = bg; x.fillRect(0, 0, 128, 128);
+  x.font = '84px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(emo, 64, 72);
+  return _avCache[emo] = c.toDataURL('image/png');
+}
 function resizeImg(file, size) {
   return new Promise((res, rej) => {
-    const rd = new FileReader();
-    rd.onerror = rej;
-    rd.onload = e => {
-      const img = new Image();
-      img.onload = () => {
-        const c = document.createElement('canvas'); c.width = c.height = size;
-        const ctx2 = c.getContext('2d');
-        const s = Math.min(img.width, img.height);
-        const ox = (img.width - s) / 2, oy = (img.height - s) / 2;
-        ctx2.drawImage(img, ox, oy, s, s, 0, 0, size, size);
-        res(c.toDataURL('image/jpeg', 0.82));
-      };
-      img.onerror = rej;
-      img.src = e.target.result;
-    };
+    const rd = new FileReader(); rd.onerror = rej;
+    rd.onload = e => { const img = new Image(); img.onload = () => { const c = document.createElement('canvas'); c.width = c.height = size; const x = c.getContext('2d'); const sq = Math.min(img.width, img.height); x.drawImage(img, (img.width - sq) / 2, (img.height - sq) / 2, sq, sq, 0, 0, size, size); res(c.toDataURL('image/jpeg', 0.82)); }; img.onerror = rej; img.src = e.target.result; };
     rd.readAsDataURL(file);
   });
 }
-
-// ---------- 가입 화면 ----------
-let siAvatarData = '';
-function showSignup() {
-  document.getElementById('ovSignup').classList.remove('hidden');
-  const def = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80"><rect width="80" height="80" fill="%23345"/><text x="40" y="52" text-anchor="middle" font-size="36" fill="%23fff">👔</text></svg>';
-  document.getElementById('siAvatarPreview').src = def;
-  siAvatarData = '';
+function buildAvGrid(gridEl, previewEl, onPick) {
+  gridEl.innerHTML = '';
+  PRESET_AVATARS.forEach(emo => { const im = document.createElement('img'); im.src = emojiAvatar(emo); im.addEventListener('click', () => { gridEl.querySelectorAll('img').forEach(i => i.classList.remove('sel')); im.classList.add('sel'); previewEl.src = im.src; onPick(im.src); }); gridEl.appendChild(im); });
+  gridEl.firstChild.classList.add('sel'); previewEl.src = emojiAvatar(PRESET_AVATARS[0]); onPick(previewEl.src);
 }
-document.getElementById('siFile').addEventListener('change', async e => {
-  const f = e.target.files[0]; if (!f) return;
-  if (f.size > 5 * 1024 * 1024) return toast('파일이 너무 커! 5MB 이하로');
-  try { siAvatarData = await resizeImg(f, 128); document.getElementById('siAvatarPreview').src = siAvatarData; } catch (err) { toast('이미지 오류'); }
-});
-document.getElementById('siGo').addEventListener('click', async () => {
-  const nick = document.getElementById('siNick').value.trim();
+function wireFile(inputEl, gridEl, previewEl, onPick) {
+  inputEl.addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 8 * 1024 * 1024) return toast('파일이 너무 커! 8MB 이하로'); try { const d = await resizeImg(f, 128); gridEl.querySelectorAll('img').forEach(i => i.classList.remove('sel')); previewEl.src = d; onPick(d); } catch (err) { toast('이미지 오류'); } });
+}
+// 눈 아이콘 토글 (동적 요소 포함)
+document.addEventListener('click', e => { const t = e.target.closest('.eye'); if (!t) return; const inp = document.getElementById(t.dataset.for); if (!inp) return; const show = inp.type === 'password'; inp.type = show ? 'text' : 'password'; t.classList.toggle('off', show); });
+
+// ---------- 비밀번호 해시 ----------
+async function hashPw(pw) {
+  const str = 'ksm-salt|' + pw;
+  try { const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)); return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join(''); }
+  catch (e) { let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) >>> 0; return 'fb' + h.toString(16); }
+}
+
+// ---------- jsonbin 추가 API ----------
+async function apiCreateNamed(data, name) {
+  const r = await fetch('https://api.jsonbin.io/v3/b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Private': 'true', 'X-Bin-Name': name.slice(0, 120) }, body: JSON.stringify(data) });
+  if (!r.ok) throw new Error('create failed ' + r.status);
+  const j = await r.json(); return j.metadata.id;
+}
+async function apiRename(id, name) {
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${id}/meta/name`, { method: 'PUT', headers: { 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Name': name.slice(0, 120) } });
+  if (!r.ok) throw new Error('rename failed ' + r.status);
+}
+async function apiListPage(lastId) {
+  const url = 'https://api.jsonbin.io/v3/c/uncategorized/bins' + (lastId ? '/' + lastId : '');
+  const r = await fetch(url, { headers: { 'X-Master-Key': BIN_MASTER_KEY } });
+  if (!r.ok) throw new Error('list failed ' + r.status);
+  const j = await r.json(); return Array.isArray(j) ? j : (j.record || j.bins || []);
+}
+async function findBinsByName(name) {
+  const found = []; let last = null;
+  for (let page = 0; page < 30; page++) {
+    const rows = await apiListPage(last);
+    if (!rows.length) break;
+    for (const row of rows) { const nm = (row.snippetMeta && row.snippetMeta.name) || row.name || ''; const id = row.record || row.id || row.binId; if (nm === name && id) found.push(id); }
+    const lastRow = rows[rows.length - 1]; last = lastRow.record || lastRow.id || lastRow.binId;
+    if (rows.length < 10 || !last) break;
+  }
+  return found;
+}
+
+// ---------- 시작 / 가입 / 로그인 ----------
+$('#stNew').addEventListener('click', () => { showOv('ovSignup'); siAvatarData = ''; buildAvGrid($('#siAvGrid'), $('#siAvatarPreview'), d => siAvatarData = d); });
+$('#stLogin').addEventListener('click', () => showOv('ovLogin'));
+$('#siBack').addEventListener('click', () => showOv('ovStart'));
+$('#liBack').addEventListener('click', () => showOv('ovStart'));
+$('#liRestore').addEventListener('click', () => showOv('ovRestore'));
+$('#reBack').addEventListener('click', () => showOv('ovLogin'));
+
+let siAvatarData = '';
+wireFile($('#siFile'), $('#siAvGrid'), $('#siAvatarPreview'), d => siAvatarData = d);
+
+function busy(btn, txt) { btn.dataset.orig = btn.dataset.orig || btn.textContent; btn.textContent = txt; btn.classList.add('disabled'); }
+function unbusy(btn) { btn.textContent = btn.dataset.orig || btn.textContent; btn.classList.remove('disabled'); }
+function enterAccount(data, binId, msg) {
+  S = Object.assign({}, DEFAULT_SAVE, data, { binId }); lastSyncData = JSON.stringify(S); saveLocal();
+  localStorage.setItem(BIN_ID_KEY, binId);
+  document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
+  updateProfileBar(); showTab('home'); if (msg) toast(msg);
+}
+
+$('#siGo').addEventListener('click', async () => {
+  const nick = $('#siNick').value.trim(), pw = $('#siPw').value;
   if (nick.length < 2) return toast('닉네임은 2자 이상!');
-  const btn = document.getElementById('siGo'); btn.textContent = '만드는 중...'; btn.classList.add('disabled');
-  const data = Object.assign({}, DEFAULT_SAVE, {
-    nick, num: Math.floor(Math.random() * 9000) + 1000, avatar: siAvatarData, created: Date.now(), lastHunt: Date.now(),
-  });
+  if (nick.includes('|')) return toast('닉네임에 | 는 못 써');
+  if (pw.length < 4) return toast('비밀번호는 4자 이상!');
+  const btn = $('#siGo'); busy(btn, '만드는 중...');
   try {
-    const id = await apiCreate(data);
+    const data = Object.assign({}, DEFAULT_SAVE, { nick, num: Math.floor(Math.random() * 9000) + 1000, avatar: siAvatarData || emojiAvatar('👔'), pw: await hashPw(pw), created: Date.now(), lastHunt: Date.now(), updatedAt: Date.now() });
+    const id = await apiCreateNamed(data, BIN_PREFIX + nick);
     data.binId = id;
-    S = data; lastSyncData = JSON.stringify(S); saveLocal();
-    localStorage.setItem(BIN_ID_KEY, id);
-    document.getElementById('ovSignup').classList.add('hidden');
-    updateProfileBar(); showTab('home');
-    toast('✨ ' + nick + ' 환영해!');
-  } catch (e) {
-    btn.textContent = '✨ 계정 만들기'; btn.classList.remove('disabled');
-    toast('❌ 서버 오류, 다시 시도해!');
-  }
+    enterAccount(data, id, '✨ ' + nick + ' 환영해!');
+  } catch (e) { toast('❌ 서버 오류: ' + e.message); }
+  unbusy(btn);
 });
-document.getElementById('siRestore').addEventListener('click', () => {
-  document.getElementById('ovSignup').classList.add('hidden');
-  document.getElementById('ovRestore').classList.remove('hidden');
-});
-document.getElementById('reBack').addEventListener('click', () => {
-  document.getElementById('ovRestore').classList.add('hidden');
-  document.getElementById('ovSignup').classList.remove('hidden');
-});
-document.getElementById('reGo').addEventListener('click', async () => {
-  const code = document.getElementById('reCode').value.trim();
-  if (code.length < 10) return toast('올바른 복구 코드가 아니야');
-  const btn = document.getElementById('reGo'); btn.textContent = '불러오는 중...'; btn.classList.add('disabled');
+
+$('#liGo').addEventListener('click', async () => {
+  const nick = $('#liNick').value.trim(), pw = $('#liPw').value;
+  if (!nick) return toast('닉네임을 입력해');
+  const btn = $('#liGo'); busy(btn, '찾는 중...');
   try {
-    const data = await apiRead(code);
-    S = Object.assign({}, DEFAULT_SAVE, data, { binId: code });
-    lastSyncData = JSON.stringify(S); saveLocal();
-    localStorage.setItem(BIN_ID_KEY, code);
-    document.getElementById('ovRestore').classList.add('hidden');
-    updateProfileBar(); showTab('home');
-    toast('✅ ' + S.nick + '님 환영!');
-  } catch (e) {
-    btn.textContent = '불러오기'; btn.classList.remove('disabled');
-    toast('❌ 복구 코드가 잘못됨');
-  }
+    const ids = await findBinsByName(BIN_PREFIX + nick);
+    if (!ids.length) { toast('❌ 그 닉네임의 계정이 없어'); unbusy(btn); return; }
+    const h = await hashPw(pw);
+    let ok = null;
+    for (const id of ids) { try { const d = await apiRead(id); if ((d.pw || '') === h || (!d.pw && !pw)) { ok = { d, id }; break; } } catch (e) {} }
+    if (!ok) { toast('❌ 비밀번호가 틀렸어'); unbusy(btn); return; }
+    enterAccount(ok.d, ok.id, '✅ ' + ok.d.nick + '님 환영!');
+  } catch (e) { toast('❌ 서버 오류: ' + e.message); }
+  unbusy(btn);
 });
+
+$('#reGo').addEventListener('click', async () => {
+  const code = $('#reCode').value.trim();
+  if (code.length < 10) return toast('올바른 복구 코드가 아니야');
+  const btn = $('#reGo'); busy(btn, '불러오는 중...');
+  try { const d = await apiRead(code); enterAccount(d, code, '✅ ' + (d.nick || '') + '님 환영!'); }
+  catch (e) { toast('❌ 복구 코드가 잘못됨'); }
+  unbusy(btn);
+});
+
+// ---------- 계정 화면 ----------
+let acAvatarData = '';
+function showAccount() {
+  const box = $('#acBox');
+  const st = S.stats || {};
+  box.innerHTML = `
+    <h2 style="text-align:center">👤 내 계정</h2>
+    <div class="row" style="justify-content:center;margin-bottom:10px"><img src="${S.avatar || emojiAvatar('👔')}" class="avprev" style="width:80px;height:80px"><div><div style="font-size:18px;font-weight:bold;color:#ffd84a">${S.nick}</div><div class="small">#${String(S.num).padStart(4,'0')} · 가입 ${S.created ? new Date(S.created).toLocaleDateString('ko-KR') : '-'}</div><div class="small">🏆 ${(S.achievements||[]).length}/${Object.keys(ACHIEVEMENTS).length} · 클리어 ${S.clears||0}회 · 처치 ${(st.totalKills||0).toLocaleString('ko-KR')}</div></div></div>
+
+    <div class="card" style="margin-bottom:10px"><h3>✏️ 닉네임 변경</h3><input id="acNick" class="inp" value="${S.nick}" maxlength="12" style="margin-bottom:6px"><div class="btn blue" id="acNickSave">저장</div></div>
+
+    <div class="card" style="margin-bottom:10px"><h3>🖼️ 아바타 변경</h3><div class="avgrid" id="acAvGrid"></div><div class="row" style="margin-top:6px"><img id="acAvPrev" class="avprev" src=""><input type="file" id="acFile" accept="image/*" style="flex:1;font-size:12px;color:#ccc"></div><div class="btn blue" id="acAvSave">저장</div></div>
+
+    <div class="card" style="margin-bottom:10px"><h3>🔒 비밀번호 변경</h3>
+      <div class="pwwrap"><input id="acPw0" class="inp" type="password" placeholder="기존 비밀번호"><span class="eye" data-for="acPw0">👁️</span></div>
+      <div class="pwwrap"><input id="acPw1" class="inp" type="password" placeholder="새 비밀번호 (4자 이상)"><span class="eye" data-for="acPw1">👁️</span></div>
+      <div class="pwwrap"><input id="acPw2" class="inp" type="password" placeholder="새 비밀번호 확인"><span class="eye" data-for="acPw2">👁️</span></div>
+      <div class="btn blue" id="acPwSave">변경</div></div>
+
+    <div class="card" style="margin-bottom:10px"><h3>🔑 복구 코드</h3><p class="small">비밀번호를 잊었을 때 이걸로 로그인할 수 있어. 남한테 알려주지 마!</p><div style="background:#0b0b14;padding:8px;border:2px solid #3a3a5c;font-family:monospace;font-size:11px;word-break:break-all;margin-top:6px">${S.binId}</div><div class="btn" id="acCopy" style="background:#2f6fd9">📋 복사</div></div>
+
+    <div class="row" style="gap:8px"><div class="btn" id="acLogout" style="background:#a33;flex:1;text-align:center">로그아웃</div><div class="btn" id="acClose" style="background:#555;flex:1;text-align:center">닫기</div></div>`;
+  showOv('ovAccount');
+  acAvatarData = S.avatar;
+  buildAvGrid($('#acAvGrid'), $('#acAvPrev'), d => acAvatarData = d);
+  $('#acAvGrid').querySelectorAll('img').forEach(i => i.classList.remove('sel')); $('#acAvPrev').src = S.avatar || emojiAvatar('👔'); acAvatarData = S.avatar;
+  wireFile($('#acFile'), $('#acAvGrid'), $('#acAvPrev'), d => acAvatarData = d);
+
+  $('#acClose').addEventListener('click', () => hideOv('ovAccount'));
+  $('#acCopy').addEventListener('click', () => { try { navigator.clipboard.writeText(S.binId); toast('복사됨!'); } catch (e) { toast(S.binId); } });
+  $('#acNickSave').addEventListener('click', async () => {
+    const nick = $('#acNick').value.trim();
+    if (nick.length < 2) return toast('닉네임은 2자 이상!'); if (nick.includes('|')) return toast('| 는 못 써'); if (nick === S.nick) return toast('같은 닉네임이야');
+    const btn = $('#acNickSave'); busy(btn, '저장 중...');
+    try { await apiRename(S.binId, BIN_PREFIX + nick); S.nick = nick; save(); updateProfileBar(); toast('닉네임 변경 완료!'); showAccount(); } catch (e) { toast('❌ 실패: ' + e.message); unbusy(btn); }
+  });
+  $('#acAvSave').addEventListener('click', () => { if (!acAvatarData) return; S.avatar = acAvatarData; save(); updateProfileBar(); toast('아바타 변경 완료!'); showAccount(); });
+  $('#acPwSave').addEventListener('click', async () => {
+    const p0 = $('#acPw0').value, p1 = $('#acPw1').value, p2 = $('#acPw2').value;
+    if (S.pw && (await hashPw(p0)) !== S.pw) return toast('❌ 기존 비밀번호가 틀렸어');
+    if (p1.length < 4) return toast('새 비밀번호는 4자 이상!');
+    if (p1 !== p2) return toast('❌ 새 비밀번호 두 개가 달라');
+    S.pw = await hashPw(p1); save(); toast('🔒 비밀번호 변경 완료!'); showAccount();
+  });
+  let ar = false;
+  $('#acLogout').addEventListener('click', () => { const b = $('#acLogout'); if (!ar) { ar = true; b.textContent = '진짜? 다시 누르면 로그아웃'; return; } clearTimeout(syncTimer); if (S.binId) apiUpdate(S.binId, S).catch(()=>{}); localStorage.removeItem(BIN_ID_KEY); localStorage.removeItem(SAVE_KEY); S = Object.assign({}, DEFAULT_SAVE); showOv('ovStart'); });
+}
 
 boot();
 </script>
