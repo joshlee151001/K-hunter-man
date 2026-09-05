@@ -208,18 +208,6 @@
       <div class="pwwrap"><input id="liPw" class="inp" type="password" placeholder="비밀번호" maxlength="32"><span class="eye" data-for="liPw">👁️</span></div>
       <div class="btn big blue" id="liGo" style="margin-top:14px">로그인</div>
       <div class="btn" id="liBack" style="width:100%;background:#555;margin-top:8px;text-align:center">뒤로</div>
-      <p class="small" style="text-align:center;margin-top:12px"><span id="liRestore" style="color:#8a8ab0;text-decoration:underline;cursor:pointer">비밀번호를 잊었어? 복구 코드로 로그인</span></p>
-    </div>
-  </div>
-
-  <!-- 복구 코드 -->
-  <div id="ovRestore" class="overlay hidden">
-    <div class="result-box" style="max-width:340px">
-      <h2>🔑 복구 코드</h2>
-      <p class="small" style="margin:8px 0 14px">계정 화면에 있는 복구 코드를 입력해</p>
-      <input id="reCode" class="inp" placeholder="복구 코드 (24자)" style="text-align:center;font-family:monospace">
-      <div class="btn big blue" id="reGo">불러오기</div>
-      <div class="btn" id="reBack" style="width:100%;background:#555;margin-top:10px">뒤로</div>
     </div>
   </div>
 
@@ -1790,7 +1778,11 @@ function emojiAvatar(emo) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
   const bg = ['#2a4a80', '#3b8f3b', '#8a3060', '#b58a1c', '#2f6fd9', '#5a3a1a', '#3a6a3a', '#a33'][PRESET_AVATARS.indexOf(emo) % 8] || '#345';
   x.fillStyle = bg; x.fillRect(0, 0, 128, 128);
-  x.font = '84px serif'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillText(emo, 64, 72);
+  x.font = '80px "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Twemoji Mozilla", sans-serif';
+  x.textBaseline = 'middle';
+  x.textAlign = 'left';
+  const m = x.measureText(emo);
+  x.fillText(emo, Math.round(64 - m.width / 2), 68);
   return _avCache[emo] = c.toDataURL('image/png');
 }
 function resizeImg(file, size) {
@@ -1820,12 +1812,12 @@ async function hashPw(pw) {
 
 // ---------- jsonbin 추가 API ----------
 async function apiCreateNamed(data, name) {
-  const r = await fetch('https://api.jsonbin.io/v3/b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Private': 'true', 'X-Bin-Name': name.slice(0, 120) }, body: JSON.stringify(data) });
+  const r = await fetch('https://api.jsonbin.io/v3/b', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Private': 'true', 'X-Bin-Name': encodeURIComponent(name).slice(0, 120) }, body: JSON.stringify(data) });
   if (!r.ok) throw new Error('create failed ' + r.status);
   const j = await r.json(); return j.metadata.id;
 }
 async function apiRename(id, name) {
-  const r = await fetch(`https://api.jsonbin.io/v3/b/${id}/meta/name`, { method: 'PUT', headers: { 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Name': name.slice(0, 120) } });
+  const r = await fetch(`https://api.jsonbin.io/v3/b/${id}/meta/name`, { method: 'PUT', headers: { 'X-Master-Key': BIN_MASTER_KEY, 'X-Bin-Name': encodeURIComponent(name).slice(0, 120) } });
   if (!r.ok) throw new Error('rename failed ' + r.status);
 }
 async function apiListPage(lastId) {
@@ -1839,7 +1831,7 @@ async function findBinsByName(name) {
   for (let page = 0; page < 30; page++) {
     const rows = await apiListPage(last);
     if (!rows.length) break;
-    for (const row of rows) { const nm = (row.snippetMeta && row.snippetMeta.name) || row.name || ''; const id = row.record || row.id || row.binId; if (nm === name && id) found.push(id); }
+    for (const row of rows) { const nm = (row.snippetMeta && row.snippetMeta.name) || row.name || ''; const id = row.record || row.id || row.binId; let dec = nm; try { dec = decodeURIComponent(nm); } catch(e) {} if ((nm === name || dec === name) && id) found.push(id); }
     const lastRow = rows[rows.length - 1]; last = lastRow.record || lastRow.id || lastRow.binId;
     if (rows.length < 10 || !last) break;
   }
@@ -1851,8 +1843,6 @@ $('#stNew').addEventListener('click', () => { showOv('ovSignup'); siAvatarData =
 $('#stLogin').addEventListener('click', () => showOv('ovLogin'));
 $('#siBack').addEventListener('click', () => showOv('ovStart'));
 $('#liBack').addEventListener('click', () => showOv('ovStart'));
-$('#liRestore').addEventListener('click', () => showOv('ovRestore'));
-$('#reBack').addEventListener('click', () => showOv('ovLogin'));
 
 let siAvatarData = '';
 wireFile($('#siFile'), $('#siAvGrid'), $('#siAvatarPreview'), d => siAvatarData = d);
@@ -1897,15 +1887,6 @@ $('#liGo').addEventListener('click', async () => {
   unbusy(btn);
 });
 
-$('#reGo').addEventListener('click', async () => {
-  const code = $('#reCode').value.trim();
-  if (code.length < 10) return toast('올바른 복구 코드가 아니야');
-  const btn = $('#reGo'); busy(btn, '불러오는 중...');
-  try { const d = await apiRead(code); enterAccount(d, code, '✅ ' + (d.nick || '') + '님 환영!'); }
-  catch (e) { toast('❌ 복구 코드가 잘못됨'); }
-  unbusy(btn);
-});
-
 // ---------- 계정 화면 ----------
 let acAvatarData = '';
 function showAccount() {
@@ -1925,8 +1906,6 @@ function showAccount() {
       <div class="pwwrap"><input id="acPw2" class="inp" type="password" placeholder="새 비밀번호 확인"><span class="eye" data-for="acPw2">👁️</span></div>
       <div class="btn blue" id="acPwSave">변경</div></div>
 
-    <div class="card" style="margin-bottom:10px"><h3>🔑 복구 코드</h3><p class="small">비밀번호를 잊었을 때 이걸로 로그인할 수 있어. 남한테 알려주지 마!</p><div style="background:#0b0b14;padding:8px;border:2px solid #3a3a5c;font-family:monospace;font-size:11px;word-break:break-all;margin-top:6px">${S.binId}</div><div class="btn" id="acCopy" style="background:#2f6fd9">📋 복사</div></div>
-
     <div class="row" style="gap:8px"><div class="btn" id="acLogout" style="background:#a33;flex:1;text-align:center">로그아웃</div><div class="btn" id="acClose" style="background:#555;flex:1;text-align:center">닫기</div></div>`;
   showOv('ovAccount');
   acAvatarData = S.avatar;
@@ -1935,7 +1914,6 @@ function showAccount() {
   wireFile($('#acFile'), $('#acAvGrid'), $('#acAvPrev'), d => acAvatarData = d);
 
   $('#acClose').addEventListener('click', () => hideOv('ovAccount'));
-  $('#acCopy').addEventListener('click', () => { try { navigator.clipboard.writeText(S.binId); toast('복사됨!'); } catch (e) { toast(S.binId); } });
   $('#acNickSave').addEventListener('click', async () => {
     const nick = $('#acNick').value.trim();
     if (nick.length < 2) return toast('닉네임은 2자 이상!'); if (nick.includes('|')) return toast('| 는 못 써'); if (nick === S.nick) return toast('같은 닉네임이야');
