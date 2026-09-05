@@ -238,7 +238,7 @@ const DEFAULT_SAVE = {
   nick: '', num: 0, avatar: '', binId: '',
   coins: 0, worm: 0, puzzle: 0, upLv: 0, star: 0, lastHunt: Date.now(), bgm: true, sfx: true, clears: 0, best: 0,
   stats: { plays: 0, totalKills: 0, totalCoins: 0, totalPlayTime: 0, killByAttack: {} },
-  achievements: [], created: 0, pw: '', updatedAt: 0,
+  achievements: [], created: 0, pw: '', updatedAt: 0, lastDaily: 0,
 };
 let S = Object.assign({}, DEFAULT_SAVE);
 
@@ -640,9 +640,19 @@ function drawHero(cv) {
 
 // ---------- 상점 ----------
 function renderShop(c) {
+  const DAY = 24 * 60 * 60 * 1000;
+  const since = Date.now() - (S.lastDaily || 0);
+  const canDaily = since >= DAY;
+  const nextTxt = canDaily ? '지금 받기!' : (() => { const ms = DAY - since; const h = Math.floor(ms/3600000), m = Math.floor((ms%3600000)/60000); return `${h}시간 ${m}분 후`; })();
   c.innerHTML = `<h2>🏪 상점</h2>
+    <div class="card"><div class="shop-item"><span class="ico">🎁</span><div style="flex:1"><h3>일일 보상</h3><p class="small">매일 🪙10 + 💵10 받기 (${nextTxt})</p></div><div class="btn ${canDaily ? 'gold' : 'gray'}" id="buyDaily">${canDaily ? '받기' : '⏳ 대기'}</div></div></div>
     <div class="card"><div class="shop-item"><span class="ico">💵</span><div style="flex:1"><h3>돈 100개</h3><p class="small">캐릭터 업그레이드 재료</p></div><div class="btn gold" id="buyWorm">🪙 300</div></div></div>
     <div class="card"><div class="shop-item"><span class="ico">🧩</span><div style="flex:1"><h3>원하는 캐릭터 퍼즐 7개</h3><p class="small">별 업그레이드 재료<br>(지금은 K-직장인만 선택 가능)</p></div><div class="btn gold" id="buyPuz">🪙 1,200</div></div></div>`;
+  $('#buyDaily').addEventListener('click', () => {
+    const DAY = 24 * 60 * 60 * 1000;
+    if (Date.now() - (S.lastDaily || 0) < DAY) return toast('아직 시간이 안 됐어!');
+    S.coins += 10; S.worm += 10; S.lastDaily = Date.now(); save(); refreshRes(); toast('🎁 일일 보상: 🪙10 + 💵10'); showTab('shop');
+  });
   $('#buyWorm').addEventListener('click', () => { if (S.coins < 300) return toast('코인이 부족해!'); S.coins -= 300; S.worm += 100; save(); refreshRes(); toast('💵 돈 +100'); });
   $('#buyPuz').addEventListener('click', () => { if (S.coins < 1200) return toast('코인이 부족해!'); S.coins -= 1200; S.puzzle += 7; save(); refreshRes(); toast('🧩 K-직장인 퍼즐 +7'); });
 }
@@ -678,7 +688,7 @@ function renderSquad(c) {
 const HUNT_TICK = 60 * 1000, HUNT_MAX = 5 * 24 * 60; // 1분 1회, 최대 5일
 function huntTicks() { return Math.min(HUNT_MAX, Math.floor((Date.now() - S.lastHunt) / HUNT_TICK)); }
 let huntTimer = null;
-function huntPreview(t) { return { coins: t * 2, worm: Math.round(t * 1.3), puz: t * 0.008 }; }
+function huntPreview(t) { return { coins: t * 5, worm: Math.round(t * 1.3), puz: t * 0.008 }; }
 function renderHunt(c) {
   c.innerHTML = `<h2>🎯 사냥 (순찰)</h2>
     <div class="card">
@@ -689,14 +699,14 @@ function renderHunt(c) {
       <div class="stat"><span>🪙 쌓인 코인</span><b id="huntC">-</b></div>
       <div class="stat"><span>💵 쌓인 돈 (예상)</span><b id="huntW">-</b></div>
       <div class="stat"><span>🧩 퍼즐 (확률)</span><b id="huntP">-</b></div>
-      <p class="small">1분당 🪙2 + 💵돈 1~2개 + 🧩퍼즐 0.8%</p>
+      <p class="small">1분당 🪙5 + 💵돈 1~2개 + 🧩퍼즐 0.8%</p>
       <div class="btn big gold" id="btnCollect">보상 받기</div>
     </div>
     <canvas id="huntCanvas" width="200" height="90" style="display:block;margin:0 auto;image-rendering:pixelated;border:3px solid #3a5c3a;background:#1a2a1a"></canvas>`;
   const hc = $('#huntCanvas'), hctx = hc.getContext('2d');
   $('#btnCollect').addEventListener('click', () => {
     const t = huntTicks(); if (t <= 0) return toast('아직 1분도 안 지났어!');
-    let coins = t * 2, worm = 0, puz = 0;
+    let coins = t * 5, worm = 0, puz = 0;
     for (let i = 0; i < t; i++) { worm += 1 + (Math.random() < .3 ? 1 : 0); if (Math.random() < .008) puz++; }
     S.coins += coins; S.worm += worm; S.puzzle += puz;
     if (!S.stats) S.stats = Object.assign({}, DEFAULT_SAVE.stats); S.stats.totalCoins = (S.stats.totalCoins || 0) + coins;
@@ -927,9 +937,9 @@ function renderPick() {
   const pool = optionPool();
   // 완전 만렙: 자동으로 체력 30% 회복 + 50골드
   if (!pool.length && !run.pickTitle.includes('미니보스')) {
-    run.p.hp = Math.min(run.p.maxHp, run.p.hp + run.p.maxHp * 0.3);
-    S.coins += 50; save(); refreshRes();
-    run.texts.push({ x: run.p.x, y: run.p.y - 30, t: 1.2, txt: '완전 만렙! +30% 체력 +🪙50', col: '#ffd84a', big: true });
+    S.coins += 20; save(); refreshRes();
+    run.gemNeed += 5;
+    run.texts.push({ x: run.p.x, y: run.p.y - 30, t: 1.2, txt: '완전 만렙! +🪙20', col: '#ffd84a', big: true });
     run.pendingPicks--;
     if (run.pendingPicks > 0) return renderPick();
     $('#ovLevel').classList.add('hidden'); run.paused = false; lastT = performance.now();
@@ -1049,7 +1059,7 @@ function spawnEnemy(forceType) {
   let x = p.x + Math.cos(ang) * r, y = p.y + Math.sin(ang) * r;
   if (run.arena) { const a = run.arena; const aa = Math.random() * Math.PI * 2; x = a.x + Math.cos(aa) * a.r * .9; y = a.y + Math.sin(aa) * a.r * .9; }
   const spdMul = d.flying ? 1 : 1.15;
-  run.enemies.push({ type, x, y, hp: d.hp * sc * 0.65, maxHp: d.hp * sc * 0.65, spd: d.spd * rnd(.9, 1.1) * 0.8 * spdMul, dmg: d.dmg * 0.55 * (1 + run.t / 1800), size: d.size, strong: d.strong, erratic: d.erratic, wavy: d.wavy, ranged: d.ranged, flying: d.flying, wob: Math.random() * 10, hitT: 0, slowT: 0, stunT: 0, shootT: 1.5 });
+  run.enemies.push({ type, x, y, hp: d.hp * sc * 0.65, maxHp: d.hp * sc * 0.65, spd: d.spd * rnd(.9, 1.1) * 0.74 * spdMul, dmg: d.dmg * 0.55 * (1 + run.t / 1800), size: d.size, strong: d.strong, erratic: d.erratic, wavy: d.wavy, ranged: d.ranged, flying: d.flying, wob: Math.random() * 10, hitT: 0, slowT: 0, stunT: 0, shootT: 1.5 });
 }
 function spawnMiniBoss(idx) {
   const p = run.p;
@@ -1135,9 +1145,16 @@ const FIRE = {
     T.paper = 0.9 * cdMul() / atkSpdMul();
     const range = 90 * rangeMul() * (run.sup.paper ? 1.5 : 1);
     const halfAng = (lv >= 3 ? 1.0 : 0.75) * (run.sup.paper ? 1.4 : 1);
-    const angF = Math.atan2(p.dirY, p.dirX);
+    // 슈퍼: 가장 가까운 적 자동 조준
+    let angF;
+    if (run.sup.paper) { const t = nearestEnemy(range * 1.2); if (!t) return; angF = Math.atan2(t.y - p.y, t.x - p.x); }
+    else angF = Math.atan2(p.dirY, p.dirX);
     run.fx.push({ arc: true, x: p.x, y: p.y, a: angF, r: range, half: halfAng, t: 0.2, col: '#e8dcaa' });
+    // paper용 임시 방향
+    const saveDx = p.dirX, saveDy = p.dirY;
+    if (run.sup.paper) { p.dirX = Math.cos(angF); p.dirY = Math.sin(angF); }
     for (const e of run.enemies) if (!e.dead && inFront(p, e, range, halfAng, true)) hitEnemy(e, p.atk * 0.95 * lvDmg('paper'), 'paper', '#e8dcaa');
+    p.dirX = saveDx; p.dirY = saveDy;
   },
   pen(lv) {
     const p = run.p, T = run.timers;
