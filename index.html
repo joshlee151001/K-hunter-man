@@ -580,6 +580,262 @@ const NORMAL = CH_POOLS[1].normal;
 const STRONG = CH_POOLS[1].strong;
 
 const SPR = {
+  // ===== 펫 스프라이트 (고퀄리티) =====
+  // 🐕 강아지 — 옆모습, 귀+꼬리+4다리
+  petDog: { pal: {B:'#c88a48',D:'#7a4a20',L:'#e8b868',E:'#000',N:'#3a2010',P:'#f8b8c8',W:'#fff'}, rows: [
+    '...BB...........',
+    '..BBBB..........',
+    '.BLEBBB.........',
+    '.BNBBB..........',
+    '..BBB..BBBBB.BB.',
+    '..BBBBBBBBBBBBB.',
+    '..LLBBBBBBBBBBB.',
+    '..BBBBBBBBBBBBB.',
+    '..BBBBBBBBBBBB..',
+    '...BB.BB.BB.BB..',
+    '...DD.DD.DD.DD..',
+  ]},
+  petDogAtk: { pal: {B:'#c88a48',D:'#7a4a20',L:'#e8b868',E:'#000',N:'#3a2010',P:'#f8b8c8',W:'#fff',F:'#f44'}, rows: [
+    '...BB...........',
+    '..BBBB..........',
+    '.BLEBBB.........',
+    '.BNBBBFF........',
+    '..BBBFFBBBBB.BB.',
+    '..BBBBBBBBBBBBB.',
+    '..LLBBBBBBBBBBB.',
+    '..BBBBBBBBBBBBB.',
+    '..BBBBBBBBBBBB..',
+    '..DB..DB.BD..BD.',
+    '..DD..DD.DD..DD.',
+  ]},
+  // 🐈 고양이 — 옆모습, 뾰족 귀+긴 꼬리
+  petCat: { pal: {B:'#8a7860',D:'#5a4830',L:'#b8a880',E:'#7f8',N:'#3a2a20',W:'#fff',T:'#f8b8c8'}, rows: [
+    '.B...B..........',
+    '.BB.BB..........',
+    'BBEBBEBB........',
+    'BBTBBBTB........',
+    '.BBBBBB.BBBBB...',
+    '..BBBBBBBBBBB...',
+    '..LLBBBBBBBBBB..',
+    '..BBBBBBBBBBBBB.',
+    '..BBBBBBBBBB..BB',
+    '...B..B..B..B...',
+    '..DD.DD.DD.DD...',
+  ]},
+  petCatAtk: { pal: {B:'#8a7860',D:'#5a4830',L:'#b8a880',E:'#7f8',N:'#3a2a20',W:'#fff',T:'#f8b8c8',F:'#faa'}, rows: [
+    '.B...B..........',
+    '.BB.BB..........',
+    'BBEBBEBB........',
+    'BBTBBBTB..FFF...',
+    '.BBBBBB.FFFFF...',
+    '..BBBBBBBBBBB...',
+    '..LLBBBBBBBBBB..',
+    '..BBBBBBBBBBBBB.',
+    '..BBBBBBBBBB..BB',
+    '..DB.DB..BD.BD..',
+    '..DD.DD..DD.DD..',
+  ]},
+  // 🐹 햄스터 — 통통, 작고 귀엽게
+  petHam: { pal: {B:'#d8a878',D:'#8a6040',L:'#f0d0a0',E:'#000',P:'#f8b8c8',W:'#fff',C:'#ffc0a0'}, rows: [
+    '...BBBBB....',
+    '..BBBBBBB...',
+    '.BBLBBBLBB..',
+    '.BBEBBBEBB..',
+    '.BCBBPBBCB..',
+    '.BBBBBBBBBB.',
+    '..BLLLLLLB..',
+    '..BBBBBBBB..',
+    '...BB..BB...',
+    '...DD..DD...',
+  ]},
+  petHamAtk: { pal: {B:'#d8a878',D:'#8a6040',L:'#f0d0a0',E:'#000',P:'#f8b8c8',W:'#fff',C:'#ffc0a0',S:'#c96'}, rows: [
+    '...BBBBB....',
+    '..BBBBBBB.SS',
+    '.BBLBBBLBB.S',
+    '.BBEBBBEBB..',
+    '.BCBBPBBCB..',
+    '.BBBBBBBBBB.',
+    '..BLLLLLLB..',
+    '..BBBBBBBB..',
+    '...BB..BB...',
+    '...DD..DD...',
+  ]},
+  // 🦜 앵무새 — 옆모습, 날개+부리+꼬리깃
+  petParrot: { pal: {G:'#3a8a3a',L:'#5ac85a',R:'#f22',Y:'#ff8',E:'#000',B:'#22f',W:'#fff',O:'#f80'}, rows: [
+    '....GGG.........',
+    '...GGGGG........',
+    '..GGELGGG.......',
+    '..GGGGGYY.......',
+    '...GGGGG........',
+    '..LLGGGGGG......',
+    '.LLLGGGGGGG.....',
+    '.LLGGGGGGGG.....',
+    '..GGGGGGGG......',
+    '....GGGG........',
+    '....RR..........',
+    '....RRR.........',
+    '....R.R.........',
+  ]},
+  petParrotAtk: { pal: {G:'#3a8a3a',L:'#5ac85a',R:'#f22',Y:'#ff8',E:'#000',B:'#22f',W:'#fff',O:'#f80',F:'#ffa'}, rows: [
+    '....GGG.........',
+    '...GGGGG........',
+    '..GGELGGG.......',
+    '..GGGGGYY.......',
+    '...GGGGGGFFF....',
+    '.LLLLGGGGGFFF...',
+    'LLLLGGGGGGG.....',
+    '.LLGGGGGGGG.....',
+    '..GGGGGGGG......',
+    '....GGGG........',
+    '....RR..........',
+    '....RRR.........',
+    '....R.R.........',
+  ]},
+  // 🦎 도마뱀 — 옆모습, 긴 몸+꼬리
+  petLizard: { pal: {G:'#4aa03a',D:'#2a601a',L:'#6ad04a',E:'#f00',T:'#f88',S:'#3a8020'}, rows: [
+    '......GGG...........',
+    '.....GGGGG..........',
+    '....GGELGG..........',
+    '....GGGGGG..........',
+    '.G..GGGGGGGGGG......',
+    '.GG.GGSSGGGGGGG.....',
+    '..GGGGSSGGGGGGGGG...',
+    '..GGGGGGGGGGGGGGGG..',
+    '...GGGGGGGGG..GGGGG.',
+    '...G..G..G..G...GGG.',
+    '..DD.DD.DD.DD....GG.',
+  ]},
+  petLizardAtk: { pal: {G:'#4aa03a',D:'#2a601a',L:'#6ad04a',E:'#f00',T:'#f88',S:'#3a8020',F:'#f44'}, rows: [
+    '......GGG...........',
+    '.....GGGGG..........',
+    '....GGELGG...FFFFF..',
+    '....GGGGGGFFFFF.....',
+    '.G..GGGGGGGGGG......',
+    '.GG.GGSSGGGGGGG.....',
+    '..GGGGSSGGGGGGGGG...',
+    '..GGGGGGGGGGGGGGGG..',
+    '...GGGGGGGGG..GGGGG.',
+    '..DG.DG..GD.GD..GG.',
+    '..DD.DD..DD.DD...GG.',
+  ]},
+  // 🦉 부엉이 — 정면, 큰 눈+깃털
+  petOwl: { pal: {B:'#8a6040',D:'#5a3020',L:'#b8884a',E:'#ff8',W:'#e8d8b0',K:'#000',O:'#f80'}, rows: [
+    '..BB...BB...',
+    '..BBBBBBB...',
+    '.BBBBBBBBB..',
+    '.BBEBBBBEBB.',
+    '.BBKEBBEKBB.',
+    '.BBBBOBBBB..',
+    '.BWWWWWWWBB.',
+    '..BWBBBWBB..',
+    '..BBBBBBB...',
+    '..LLBBBLL...',
+    '...BBBBB....',
+    '...DD.DD....',
+  ]},
+  petOwlAtk: { pal: {B:'#8a6040',D:'#5a3020',L:'#b8884a',E:'#ff8',W:'#e8d8b0',K:'#000',O:'#f80',F:'#ffa'}, rows: [
+    '..BB...BB...........',
+    '..BBBBBBB...........',
+    '.BBBBBBBBB..........',
+    '.BBEBBBBEBB.........',
+    '.BBKEBBEKBB.........',
+    '.BBBBOBBBB..FFFF....',
+    '.BWWWWWWWBBFFFF.....',
+    '..BWBBBWBB..........',
+    '..BBBBBBB...........',
+    '..LLBBBLL...........',
+    '...BBBBB............',
+    '...DD.DD............',
+  ]},
+  // 🐲 용 — 날개 달린 드래곤
+  petDragon: { pal: {R:'#c02020',D:'#600',L:'#e84040',E:'#ff0',S:'#f80',W:'#f8a',K:'#000',F:'#f44'}, rows: [
+    '..W.......W.........',
+    '.WWW.....WWW........',
+    'WWRRR...RRRWW.......',
+    '.WRRRRRRRRRRW.......',
+    '..RRELRRLERR........',
+    '..RRRRRRRRRR........',
+    '..RRSSSSSRRR........',
+    '..RRRSSSSRRR........',
+    '..RRRRRRRRRR........',
+    '...RRRRRRRR.........',
+    '...RR.RR.RR.........',
+    '...DD.DD.DD.........',
+  ]},
+  petDragonAtk: { pal: {R:'#c02020',D:'#600',L:'#e84040',E:'#ff0',S:'#f80',W:'#f8a',K:'#000',F:'#f44',G:'#fa0'}, rows: [
+    '..W.......W.........',
+    '.WWW.....WWW........',
+    'WWRRR...RRRWW.......',
+    '.WRRRRRRRRRRW.......',
+    '..RRELRRLERR.FFFFF..',
+    '..RRRRRRRRRRGGGFFF..',
+    '..RRSSSSSRRRGGGFF...',
+    '..RRRSSSSRRR........',
+    '..RRRRRRRRRR........',
+    '...RRRRRRRR.........',
+    '..DR.DR..RD.RD......',
+    '..DD.DD..DD.DD......',
+  ]},
+  // 🦄 유니콘 — 옆모습, 뿔+갈기
+  petUnicorn: { pal: {W:'#ffffff',D:'#c8c8ff',L:'#e8e8ff',E:'#f88',H:'#ffd84a',P:'#f8b8f8',M:'#c8a0f8',K:'#000'}, rows: [
+    '......H.............',
+    '.....HH.............',
+    '....HWWW............',
+    '...MWWWWW...........',
+    '..MWEWWWW...........',
+    '..MWWWWWW...........',
+    '...WWWW.WWWWWW......',
+    '...PWWWWWWWWWWW.....',
+    '....WWWDDWWWWWWW....',
+    '....WWWWWWWWWWW.....',
+    '.....WWWWWWWWW......',
+    '.....WW.WW.WW.......',
+    '....DD.DD.DD.DD.....',
+  ]},
+  petUnicornAtk: { pal: {W:'#ffffff',D:'#c8c8ff',L:'#e8e8ff',E:'#f88',H:'#ffd84a',P:'#f8b8f8',M:'#c8a0f8',K:'#000',F:'#ffa',G:'#ff8'}, rows: [
+    '......H.......GGGG..',
+    '.....HH......GFFFF..',
+    '....HWWW.....GFFF...',
+    '...MWWWWW...........',
+    '..MWEWWWW...........',
+    '..MWWWWWW...........',
+    '...WWWW.WWWWWW......',
+    '...PWWWWWWWWWWW.....',
+    '....WWWDDWWWWWWW....',
+    '....WWWWWWWWWWW.....',
+    '.....WWWWWWWWW......',
+    '....DW.DW.WD.WD.....',
+    '....DD.DD.DD.DD.....',
+  ]},
+  // 🐦 봉황 — 날개 활짝, 불꽃
+  petPhoenix: { pal: {R:'#f80',Y:'#ff8',E:'#f00',W:'#fff',D:'#c40',L:'#ffa',K:'#000',G:'#f44'}, rows: [
+    'Y...........Y.......',
+    'YY..RRRRR..YY.......',
+    'YYR.RRRRR.RYY.......',
+    '.YRRRRRRRRRY........',
+    '..RRRELERRY.........',
+    '..RRRRRRRRR.........',
+    '..RRDDDDDRRR........',
+    '..RRRDDDDRRR........',
+    '..RRRRRRRRR.........',
+    '...YYYYYYY..........',
+    '...YY.Y.YY..........',
+    '...D..D..D..........',
+  ]},
+  petPhoenixAtk: { pal: {R:'#f80',Y:'#ff8',E:'#f00',W:'#fff',D:'#c40',L:'#ffa',K:'#000',G:'#f44',F:'#ff0'}, rows: [
+    'Y...........Y.......',
+    'YY..RRRRR..YY.......',
+    'YYR.RRRRR.RYY.......',
+    '.YRRRRRRRRRY.FFFFF..',
+    '..RRRELERRY.GFFFFF..',
+    '..RRRRRRRRRGGGFFF...',
+    '..RRDDDDDRRR........',
+    '..RRRDDDDRRR........',
+    '..RRRRRRRRR.........',
+    '...YYYYYYY..........',
+    '..DY.DY.YD.YD.......',
+    '..DD.DD.DD.DD.......',
+  ]},
   workerF: { pal: { H: '#5a3418', S: '#f4c290', E: '#000', W: '#f0f0f0', B: '#7a3060', T: '#c8102e', R: '#8a2050', P: '#1a1a24', K: '#000' }, rows: [
     '.....HHHH...',
     '...HHHHHHHH.',
@@ -948,16 +1204,106 @@ function fmt(n) { return n.toLocaleString('ko-KR'); }
 function fmtTime(sec) { sec = Math.max(0, Math.floor(sec)); return String(Math.floor(sec / 60)).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); }
 let toastT = null;
 function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.remove('hidden'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.add('hidden'), 1800); }
+// ===== 펫/장비 정보 팝업 =====
+function showInfoPopup(html) {
+  let overlay = document.getElementById('infoOverlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'infoOverlay';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;box-sizing:border-box';
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.style.display = 'none'; });
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML = `<div style="background:#1c1c30;border:2px solid #ffd84a;border-radius:14px;padding:20px;max-width:340px;width:100%;max-height:80vh;overflow-y:auto;color:#eee;font-size:13px;box-shadow:0 0 30px rgba(255,216,74,.3)">
+    ${html}
+    <div class="btn gold" style="margin-top:14px;text-align:center;padding:10px" onclick="document.getElementById('infoOverlay').style.display='none'">닫기</div>
+  </div>`;
+  overlay.style.display = 'flex';
+}
+function showPetInfo(id) {
+  const p = PETS[id]; if (!p) return;
+  const st = S.pets[id] || { level: 1 };
+  const rarityMap = { common: { name: '일반', col: '#8f8', ico: '🟢' }, rare: { name: '희귀', col: '#4af', ico: '🔵' }, epic: { name: '레어', col: '#c5f', ico: '🟣' }, legend: { name: '전설', col: '#ffd84a', ico: '🟡' } };
+  const r = rarityMap[p.rarity] || rarityMap.common;
+  const stats = petStatText(id);
+  const active = S.activePet === id;
+  showInfoPopup(`
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:48px">${p.ico}</span>
+      <h2 style="color:${r.col};margin:6px 0">${p.name}</h2>
+      <span style="color:${r.col};font-size:12px">${r.ico} ${r.name}</span>
+      <span style="color:#ffd84a;margin-left:8px">⭐ Lv.${st.level}/10</span>
+    </div>
+    <div style="background:#12122a;border-radius:8px;padding:10px;margin:8px 0">
+      <p style="color:#aaa;margin-bottom:6px">📋 설명</p>
+      <p>${p.desc}</p>
+    </div>
+    <div style="background:#12122a;border-radius:8px;padding:10px;margin:8px 0">
+      <p style="color:#aaa;margin-bottom:6px">📊 능력치</p>
+      <p style="color:#8ac">${stats}</p>
+    </div>
+    <div style="background:#12122a;border-radius:8px;padding:10px;margin:8px 0">
+      <p style="color:#aaa;margin-bottom:6px">🎯 성향</p>
+      <p>${st.trait === 'attack' ? '⚔️ 공격형' : st.trait === 'defense' ? '🛡 수비형' : '⚖️ 균형형'}</p>
+    </div>
+    <p style="text-align:center;color:${active ? '#ffd84a' : '#666'};margin-top:8px">${active ? '✅ 현재 장착 중' : '미장착'}</p>
+  `);
+}
+function showEquipInfo(id) {
+  const e = EQUIP[id]; if (!e) return;
+  const t = TIER_INFO[e.tier];
+  const lv = (S.equipLv && S.equipLv[id]) || 1;
+  const mul = 1 + (lv - 1) * 0.1;
+  const cnt = (S.equipInv && S.equipInv[id]) || 0;
+  const equipped = S.equipSlots && S.equipSlots[e.slot] === id;
+  const slotMap = { weapon: '🗡️ 무기', armor: '🛡️ 방어구', shoes: '👟 신발', acc: '💍 악세서리' };
+  const bonusLines = Object.entries(e.bonus).map(([k,v]) => {
+    const map = { atk: '⚔️ 공격력', hp: '❤️ 체력', crit: '🎯 치명타', cd: '⏱️ 쿨타임', spd: '🏃 이동속도', magnet: '🧲 자석', coin: '🪙 코인', dmgDown: '🛡 피해감소' };
+    const sign = (k === 'cd' || k === 'dmgDown') ? '-' : '+';
+    return `<div style="display:flex;justify-content:space-between;padding:2px 0"><span>${map[k]||k}</span><span style="color:#ffd84a">${sign}${(v*mul*100).toFixed(0)}%</span></div>`;
+  }).join('');
+  showInfoPopup(`
+    <div style="text-align:center;margin-bottom:10px">
+      <span style="font-size:48px">${e.ico}</span>
+      <h2 style="color:${t.col};margin:6px 0">${e.name}</h2>
+      <span style="color:${t.col};font-size:12px">${['🟢','🔵','🟣','🟡'][e.tier]||''} ${t.name}</span>
+      <span style="color:#ffd84a;margin-left:8px">Lv.${lv}/10</span>
+      <span style="color:#aaa;margin-left:8px">×${cnt}</span>
+    </div>
+    <div style="background:#12122a;border-radius:8px;padding:10px;margin:8px 0">
+      <p style="color:#aaa;margin-bottom:6px">${slotMap[e.slot] || e.slot}</p>
+      ${bonusLines}
+    </div>
+    <p style="text-align:center;color:${equipped ? '#ffd84a' : '#666'};margin-top:8px">${equipped ? '✅ 현재 장착 중' : '미장착'}</p>
+  `);
+}
 
-function drawSprite(ctx, spr, x, y, scale, flip) {
+function drawSprite(ctx, spr, x, y, scale, flip, walkPhase) {
   const rows = spr.rows, h = rows.length, w = rows[0].length;
   const ox = x - (w * scale) / 2, oy = y - (h * scale) / 2;
-  for (let r = 0; r < h; r++) for (let c = 0; c < w; c++) {
-    const ch = rows[r][c]; if (ch === '.') continue;
-    const col = spr.pal[ch]; if (!col) continue;
-    ctx.fillStyle = col;
-    const cx = flip ? (w - 1 - c) : c;
-    ctx.fillRect(Math.round(ox + cx * scale), Math.round(oy + r * scale), Math.ceil(scale), Math.ceil(scale));
+  // walkPhase: -1~1 사인값, 마지막 2줄(다리+발)에 좌우 발 교대 오프셋
+  const hasWalk = typeof walkPhase === 'number' && walkPhase !== 0;
+  for (let r = 0; r < h; r++) {
+    // 마지막 2줄: 다리(h-2)와 발(h-1) — 좌우 반반 나눠서 각각 오프셋
+    let leftYOff = 0, rightYOff = 0;
+    if (hasWalk && r >= h - 2) {
+      const lift = Math.round(Math.abs(walkPhase) * 3);
+      if (walkPhase > 0) { leftYOff = -lift; rightYOff = 0; }
+      else { leftYOff = 0; rightYOff = -lift; }
+    }
+    const mid = Math.floor(w / 2);
+    for (let c = 0; c < w; c++) {
+      const ch = rows[r][c]; if (ch === '.') continue;
+      const col = spr.pal[ch]; if (!col) continue;
+      ctx.fillStyle = col;
+      const cx = flip ? (w - 1 - c) : c;
+      let yOff = 0;
+      if (hasWalk && r >= h - 2) {
+        const isLeft = flip ? (cx >= mid) : (cx < mid);
+        yOff = isLeft ? leftYOff : rightYOff;
+      }
+      ctx.fillRect(Math.round(ox + cx * scale), Math.round(oy + r * scale + yOff), Math.ceil(scale), Math.ceil(scale));
+    }
   }
 }
 
@@ -1016,14 +1362,20 @@ function renderHome(c) {
     </div>
     ${(S.clears||0)>=1 ? `<div class="card">
       <h3>🚇 2챕터 — 지하철 열차 안</h3>
-      <p>1챕터를 클리어해서 열림! 좁은 열차 안에서 15분 살아남기. 마지막엔 <b style="color:#ffd84a">터널 대왕거미</b>!<br>
-      <span class="small">클리어 보상: 🪙550 + 💵3 + 확률로 🧩퍼즐<br>클리어 ${S.clearsCh2||0}회 · 최고 ${fmtTime(S.bestCh2||0)}</span></p>
+      <p class="small">좁은 열차 안에서 15분! 보스: <b style="color:#ffd84a">터널 대왕거미</b><br>클리어 보상: 🪙550 + 💵3 + 🍖150 + 💎80 + 🔨150<br>클리어 ${Math.max((S.superClears||{})['2-1']||0, S.clearsCh2||0)}회</p>
       <div class="btn big" id="btnStart2" style="background:#8a3060">🚇 승차! (2챕터)</div>
     </div>` : `<div class="card" style="opacity:.5"><h3>🔒 2챕터 (잠김)</h3><p class="small">1챕터를 1번 클리어하면 열려요</p></div>`}
+    ${((S.superClears||{})['2-1']||0)>=1 || (S.clearsCh2||0)>=1 ? `<div class="card">
+      <h3>🛍️ 3챕터 — 강남 지하상가</h3>
+      <p class="small">상가를 뚫고 지상으로! 보스: <b style="color:#ffd84a">거대 자판기 로봇</b><br>클리어 보상: 🪙600 + 💵4 + 🍖200 + 💎100 + 🔨200<br>클리어 ${Math.max((S.superClears||{})['3-1']||0, S.clearsCh3||0)}회</p>
+      <div class="btn big" id="btnStart3" style="background:#b06820">🛍️ 입장! (3챕터)</div>
+    </div>` : `<div class="card" style="opacity:.5"><h3>🔒 3챕터 (잠김)</h3><p class="small">2챕터를 1번 클리어하면 열려요</p></div>`}
+    <div class="card" style="padding:8px 12px"><p class="small">🌟 <b>도전 탭</b>엔 더 어려운 버전 (X-2, X-3)도 있어! 보상 최대 2배</p></div>
     <div class="card" style="padding:8px 12px"><p class="small">🎯 사냥 중... 지금까지 <b style="color:#ffd84a">🪙${fmt(huntPreview(huntTicks()).coins)}</b> · <b style="color:#ffd84a">💵약 ${fmt(huntPreview(huntTicks()).worm)}</b> 쌓임 → 사냥 탭에서 받기</p></div>`;
   drawHero($('#heroCanvas'));
   $('#btnStart').addEventListener('click', () => { audio.init(); startRun(1, 1); });
   const b2 = document.getElementById('btnStart2'); if (b2) b2.addEventListener('click', () => { audio.init(); startRun(2, 1); });
+  const b3 = document.getElementById('btnStart3'); if (b3) b3.addEventListener('click', () => { audio.init(); startRun(3, 1); });
 }
 function drawHero(cv) {
   const ctx = cv.getContext('2d'); ctx.imageSmoothingEnabled = false;
@@ -1091,17 +1443,27 @@ function renderShop(c) {
   wireHuntCard();
   $('#buyGacha').addEventListener('click', () => {
     if ((S.hammer||0) < 500) return toast('🔨 망치 부족!');
-    S.hammer -= 500; const id = pullGacha(); S.equipInv[id] = (S.equipInv[id]||0) + 1;
-    save(); refreshRes(); toast('🎉 ' + EQUIP[id].name + ' [' + TIER_INFO[EQUIP[id].tier].name + '] 획득!'); showTab('shop');
+    S.hammer -= 500; const id = pullGacha();
+    if ((S.equipInv[id]||0) >= 1 && ((S.equipLv||{})[id]||1) < 10) {
+      if (!S.equipLv) S.equipLv = {}; S.equipLv[id] = ((S.equipLv[id]||1)) + 1;
+      save(); refreshRes(); toast('🎉 중복! ' + EQUIP[id].name + ' Lv.' + S.equipLv[id] + '!'); showTab('shop');
+    } else {
+      S.equipInv[id] = (S.equipInv[id]||0) + 1;
+      save(); refreshRes(); toast('🎉 ' + EQUIP[id].name + ' [' + TIER_INFO[EQUIP[id].tier].name + '] 획득!'); showTab('shop');
+    }
   });
   $('#buyGacha10').addEventListener('click', () => {
     if ((S.hammer||0) < 4500) return toast('🔨 망치 부족!');
-    S.hammer -= 4500; const got = {};
+    S.hammer -= 4500; const got = {}; let lvUps = 0;
     for (let i = 0; i < 10; i++) {
       const roll = Math.random();
       const tier = roll < 0.55 ? 0 : (roll < 0.85 ? 1 : (roll < 0.95 ? 2 : 3));
       const pool = equipsByTier(tier); const id = pick(pool);
-      S.equipInv[id] = (S.equipInv[id]||0) + 1;
+      if ((S.equipInv[id]||0) >= 1 && ((S.equipLv||{})[id]||1) < 10) {
+        if (!S.equipLv) S.equipLv = {}; S.equipLv[id] = ((S.equipLv[id]||1)) + 1; lvUps++;
+      } else {
+        S.equipInv[id] = (S.equipInv[id]||0) + 1;
+      }
       got[id] = (got[id]||0) + 1;
     }
     save(); refreshRes();
@@ -1192,7 +1554,7 @@ function renderSuperTab(c) {
           <div style="flex:1">
             <h3>${st.key} · ${st.name}</h3>
             <p class="small">${st.hp ? `❤️ HP ${st.hp} · 👾 수 ${st.count} · 🎁 보상 ${st.reward}` : '기본 난이도'}</p>
-            <p class="small" style="color:#ffd84a">클리어 ${cl}회</p>
+            <p class="small" style="color:#ffd84a">${cl > 0 ? '✅ 클리어! · ' : ''}${cl}회 완료${cl > 0 ? ' (계속 도전 가능)' : ''}</p>
           </div>
           <div class="btn ${unlocked ? 'gold' : 'gray'}" data-super="${st.key}">${unlocked ? '⚔️ 도전' : '🔒'}</div>
         </div>
@@ -1261,21 +1623,47 @@ function renderPets(c) {
     ${owned.map(id => { const p = PETS[id], st = S.pets[id]; const cost = petLvCost(id); const active = S.activePet === id; return `
       <div class="card" style="margin:6px 0;padding:8px;border-color:${active ? '#ffd84a' : '#3a3a5c'}">
         <div class="shop-item">
-          <span class="ico">${p.ico}</span>
-          <div style="flex:1">
+          <span class="ico" data-pet-info="${id}" style="cursor:pointer">${p.ico}</span>
+          <div style="flex:1;cursor:pointer" data-pet-info="${id}">
             <h3>${p.name} <span class="small" style="color:${p.rarity==='legend'?'#ffd84a':p.rarity==='rare'?'#4af':'#8f8'}">${p.rarity==='legend'?'전설':p.rarity==='rare'?'희귀':'일반'}</span> <b style="color:#ffd84a">Lv.${st.level}/10</b></h3>
             <p class="small">${p.desc}</p>
             <p class="small" style="color:#8ac">${petStatText(id)}</p>
+            <div class="row" style="gap:4px;margin-top:4px">
+              <span class="small">성향:</span>
+              <span class="btn" data-pet-trait="${id}|attack" style="font-size:10px;padding:2px 6px;background:${st.trait==='attack'?'#a33':'#333'}">⚔️공격</span>
+              <span class="btn" data-pet-trait="${id}|defense" style="font-size:10px;padding:2px 6px;background:${st.trait==='defense'?'#3a7':'#333'}">🛡수비</span>
+              <span class="btn" data-pet-trait="${id}|" style="font-size:10px;padding:2px 6px;background:${!st.trait?'#666':'#222'}">균형</span>
+            </div>
           </div>
           <div style="display:flex;flex-direction:column;gap:4px">
             <div class="btn ${active ? 'gold' : 'blue'}" data-pet-active="${id}" style="font-size:12px;padding:6px 10px">${active ? '✓ 장착 중' : '장착'}</div>
-            <div class="btn ${(S.food||0) >= cost && st.level < 10 ? 'gold' : 'gray'}" data-pet-lvup="${id}" style="font-size:12px;padding:6px 10px">${st.level >= 10 ? '⭐ MAX' : '🍖 ' + fmt(cost)}</div>
+            <div class="btn ${(S.food||0) >= cost && st.level < 10 ? 'gold' : 'gray'}" data-pet-lvup="${id}" style="font-size:12px;padding:6px 10px">${st.level >= 10 ? '⭐ MAX' : '🍖 ' + fmt(cost) + (active ? ' ×3' : ' ×2')}</div>
           </div>
         </div>
       </div>`; }).join('')}`;
   c.appendChild(petCard);
+  document.querySelectorAll('[data-pet-info]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); showPetInfo(b.dataset.petInfo); }));
+  document.querySelectorAll('[data-pet-trait]').forEach(b => b.addEventListener('click', () => { const [id, tr] = b.dataset.petTrait.split('|'); S.pets[id].trait = tr || null; save(); showTab('squad'); }));
   document.querySelectorAll('[data-pet-active]').forEach(b => b.addEventListener('click', () => { S.activePet = S.activePet === b.dataset.petActive ? null : b.dataset.petActive; save(); showTab('squad'); }));
-  document.querySelectorAll('[data-pet-lvup]').forEach(b => b.addEventListener('click', () => { const id = b.dataset.petLvup, cost = petLvCost(id); if (S.pets[id].level >= 10) return toast('MAX 레벨!'); if ((S.food||0) < cost) return toast('먹이 부족!'); S.food -= cost; S.pets[id].level++; save(); toast('🎉 ' + PETS[id].name + ' Lv.' + S.pets[id].level + '!'); showTab('squad'); }));
+  document.querySelectorAll('[data-pet-lvup]').forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.petLvup;
+    if (S.pets[id].level >= 10) return toast('MAX 레벨!');
+    const cost = petLvCost(id);
+    if ((S.food||0) < cost) return toast('먹이 부족!');
+    // 주력 펫(장착 중)은 3레벨, 나머지는 2레벨씩 업그레이드
+    const maxGain = (S.activePet === id) ? 3 : 2;
+    let gained = 0, totalCost = 0;
+    for (let i = 0; i < maxGain; i++) {
+      if (S.pets[id].level + gained >= 10) break;
+      const c = petLvCost(id); // 현재 레벨 기준 비용 계산용
+      const lvCost = (() => { const p = PETS[id]; const base = p.rarity === 'legend' ? 1000 : (p.rarity === 'rare' ? 300 : 100); return base * (S.pets[id].level + gained); })();
+      if ((S.food||0) < totalCost + lvCost) break;
+      totalCost += lvCost; gained++;
+    }
+    if (gained === 0) return toast('먹이 부족!');
+    S.food -= totalCost; S.pets[id].level += gained;
+    save(); toast('🎉 ' + PETS[id].name + ' +' + gained + ' → Lv.' + S.pets[id].level + '!'); showTab('squad');
+  }));
   const bmc = document.getElementById('btnMergeC');
   if (bmc) bmc.addEventListener('click', () => { if ((S.shards.common||0) < 3) return toast('조각 부족!'); S.shards.common -= 3; const rarePool = Object.entries(PETS).filter(([_,p]) => p.rarity === 'rare').map(([id]) => id); const newId = pick(rarePool); mergeGivePet(newId); });
   const bmr = document.getElementById('btnMergeR');
@@ -1330,8 +1718,8 @@ function renderEquip(c) {
         const upCost = equipUpCost(id);
         const canLevel = lv < 10;
         return `<div style="display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #2a2a44">
-          <span style="font-size:22px">${e.ico}</span>
-          <div style="flex:1"><b style="color:${t.col}">${e.name}</b> <span class="small" style="color:${t.col}">[${t.name}]</span> <span class="small" style="color:#ffd84a">Lv.${lv}/10</span> ×${cnt}<br><span class="small">${bonusDesc}</span></div>
+          <span style="font-size:22px;cursor:pointer" data-eq-info="${id}">${e.ico}</span>
+          <div style="flex:1;cursor:pointer" data-eq-info="${id}"><b style="color:${t.col}">${e.name}</b> <span class="small" style="color:${t.col}">[${t.name}]</span> <span class="small" style="color:#ffd84a">Lv.${lv}/10</span> ×${cnt}<br><span class="small">${bonusDesc}</span></div>
           <div style="display:flex;flex-direction:column;gap:3px">
             <div class="btn ${equipped?'gold':'blue'}" data-eq-toggle="${id}" style="font-size:11px;padding:4px 8px">${equipped?'✓ 장착':'장착'}</div>
             <div class="btn ${canLevel && (S.hammer||0) >= upCost ? 'gold' : 'gray'}" data-eq-lvup="${id}" style="font-size:10px;padding:3px 6px">${canLevel ? '⬆️ 🔨'+fmt(upCost) : 'MAX'}</div>
@@ -1341,6 +1729,8 @@ function renderEquip(c) {
         </div>`;
       }).join('') + '</div>'}`;
   c.appendChild(card);
+  document.querySelectorAll('[data-eq-info]').forEach(b => b.addEventListener('click', e => { e.stopPropagation(); showEquipInfo(b.dataset.eqInfo); }));
+  document.querySelectorAll('.eqSlot[data-slot]').forEach(b => b.addEventListener('click', () => { const eid = S.equipSlots[b.dataset.slot]; if (eid) showEquipInfo(eid); }));
   document.querySelectorAll('[data-eq-toggle]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.eqToggle, e = EQUIP[id];
     S.equipSlots[e.slot] = S.equipSlots[e.slot] === id ? null : id;
@@ -1448,17 +1838,21 @@ function renderPetSection(c) {
     <div class="stat"><span>🍖 먹이</span><b>${fmt(S.food||0)}</b></div>
     <div class="stat"><span>🟢 일반 조각</span><b>${(S.shards||{}).common||0}</b></div>
     <div class="stat"><span>🔵 희귀 조각</span><b>${(S.shards||{}).rare||0}</b></div>
-    <div class="row" style="gap:6px;margin-top:8px">
-      <div class="btn ${((S.shards||{}).common||0)>=3?'gold':'gray'}" id="btnMergeCS" style="flex:1;text-align:center;font-size:12px">일반3→희귀</div>
-      <div class="btn ${((S.shards||{}).rare||0)>=3?'gold':'gray'}" id="btnMergeRS" style="flex:1;text-align:center;font-size:12px">희귀3→전설</div>
+    <div class="stat"><span>🟣 레어 조각</span><b>${(S.shards||{}).epic||0}</b></div>
+    <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
+      <div class="btn ${((S.shards||{}).common||0)>=3?'gold':'gray'}" id="btnMergeCS" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">일반3→희귀</div>
+      <div class="btn ${((S.shards||{}).rare||0)>=3?'gold':'gray'}" id="btnMergeRS" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">희귀3→레어</div>
+      <div class="btn ${((S.shards||{}).epic||0)>=3?'gold':'gray'}" id="btnMergeES" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">레어3→전설</div>
     </div>
     <div id="petListArea2" style="margin-top:10px"></div>`;
   c.appendChild(card);
   renderPets($('#petListArea2'));
   const bmc = document.getElementById('btnMergeCS');
-  if (bmc) bmc.addEventListener('click', () => { if ((S.shards.common||0) < 3) return toast('조각 부족!'); S.shards.common -= 3; const rp = Object.entries(PETS).filter(([_,p]) => p.rarity === 'rare').map(([id]) => id); mergeGivePet(pick(rp)); });
+  if (bmc) bmc.addEventListener('click', () => { if ((S.shards.common||0) < 3) return toast('조각 부족!'); S.shards.common -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'rare').map(([id]) => id); mergeGivePet(pick(p)); });
   const bmr = document.getElementById('btnMergeRS');
-  if (bmr) bmr.addEventListener('click', () => { if ((S.shards.rare||0) < 3) return toast('조각 부족!'); S.shards.rare -= 3; const lp = Object.entries(PETS).filter(([_,p]) => p.rarity === 'legend').map(([id]) => id); mergeGivePet(pick(lp)); });
+  if (bmr) bmr.addEventListener('click', () => { if ((S.shards.rare||0) < 3) return toast('조각 부족!'); S.shards.rare -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'epic').map(([id]) => id); mergeGivePet(pick(p)); });
+  const bme = document.getElementById('btnMergeES');
+  if (bme) bme.addEventListener('click', () => { if ((S.shards.epic||0) < 3) return toast('조각 부족!'); S.shards.epic -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'legend').map(([id]) => id); mergeGivePet(pick(p)); });
 }
 
 // ---------- 사냥 ----------
@@ -1676,8 +2070,13 @@ function endRun(win) {
     lines.push(`🪙 코인 +${coins}`, `💵 돈 +${rewardWorm}`, `🍖 먹이 +${rewardFood}`, `💎 보석 +${rewardGem}`, `🔨 망치 +${rewardHam}`); if (puz) lines.push('🧩 K-직장인 퍼즐 +1');
     if (Math.random() < 0.15) {
       const dropId = pullGacha();
-      S.equipInv[dropId] = (S.equipInv[dropId]||0) + 1;
-      lines.push(`🎁 장비 획득: ${EQUIP[dropId].ico} ${EQUIP[dropId].name} [${TIER_INFO[EQUIP[dropId].tier].name}]`);
+      if ((S.equipInv[dropId]||0) >= 1 && ((S.equipLv||{})[dropId]||1) < 10) {
+        if (!S.equipLv) S.equipLv = {}; S.equipLv[dropId] = ((S.equipLv[dropId]||1)) + 1;
+        lines.push(`🎁 중복! ${EQUIP[dropId].ico} ${EQUIP[dropId].name} Lv.${S.equipLv[dropId]}!`);
+      } else {
+        S.equipInv[dropId] = (S.equipInv[dropId]||0) + 1;
+        lines.push(`🎁 장비 획득: ${EQUIP[dropId].ico} ${EQUIP[dropId].name} [${TIER_INFO[EQUIP[dropId].tier].name}]`);
+      }
     }
     $('#resTitle').textContent = '🏆 ' + ch + '챕터 클리어!'; $('#resTitle').style.color = '#ffd84a';
   } else {
@@ -2132,7 +2531,7 @@ function update(dt) {
   let mx = 0, my = 0;
   if (run.input.active) { const dx = run.input.cx - run.input.sx, dy = run.input.cy - run.input.sy; const l = Math.hypot(dx, dy); if (l > 8) { mx = dx / l; my = dy / l; } }
   const k = run.keys; if (k['arrowleft'] || k['a']) mx -= 1; if (k['arrowright'] || k['d']) mx += 1; if (k['arrowup'] || k['w']) my -= 1; if (k['arrowdown'] || k['s']) my += 1;
-  const ml = Math.hypot(mx, my); if (ml > 0) { mx /= ml; my /= ml; p.dirX = mx; p.dirY = my; if (Math.abs(mx) > .2) p.facing = mx > 0 ? 1 : -1; }
+  const ml = Math.hypot(mx, my); p.moving = ml > 0; if (ml > 0) { mx /= ml; my /= ml; p.dirX = mx; p.dirY = my; if (Math.abs(mx) > .2) p.facing = mx > 0 ? 1 : -1; }
   const ws = p.webSlow || 1; p.x += mx * p.spd * moveMul() * ws * dt; p.y += my * p.spd * moveMul() * ws * dt; p.webSlow = 1;
   if (run.arena) { const a = run.arena, d = dist(p, a); if (d > a.r - 14) { const ang = Math.atan2(p.y - a.y, p.x - a.x); p.x = a.x + Math.cos(ang) * (a.r - 14); p.y = a.y + Math.sin(ang) * (a.r - 14); } } else if (run.chapter === 2) { p.x = Math.max(-140, Math.min(140, p.x)); }
   if (p.inv > 0) p.inv -= dt;
@@ -2411,6 +2810,7 @@ function updatePet(dt) {
   const tx = p.x + Math.cos(pet.offAng) * 34, ty = p.y + Math.sin(pet.offAng) * 34;
   pet.x += (tx - pet.x) * 6 * dt; pet.y += (ty - pet.y) * 6 * dt;
   pet.cd -= dt;
+  if (pet.atkAnim > 0) pet.atkAnim -= dt;
   // 능력 발동
   if (pet.cd > 0) return;
   const lv = pet.level, dmg = petDmg(pet.id, lv), range = petRange(pet.id, lv);
@@ -2419,6 +2819,7 @@ function updatePet(dt) {
   const dmgMul = trait === 'attack' ? 1.3 : 1.0;
   const petLoc = { x: pet.x, y: pet.y };
   pet.cd = petCd(pet.id, lv);
+  pet.atkAnim = 0.35; // 공격 애니메이션 0.35초
   if (def.type === 'bite') {
     const t = nearestEnemy(range);
     if (t) {
@@ -3019,19 +3420,29 @@ function drawGameLayer(p, camX, camY) {
   // 플레이어
   const px = W / 2, py = H / 2;
   if (p.inv > 0 && Math.floor(p.inv * 20) % 2 === 0) ctx.globalAlpha = .4;
-  drawSprite(ctx, workerSpr(), px, py, 2.5, p.facing < 0);
+  const walkPh = p.moving ? Math.sin(run.t * 10) : 0;
+  drawSprite(ctx, workerSpr(), px, py, 2.5, p.facing < 0, walkPh);
   ctx.globalAlpha = 1;
-  // 펫 그리기
+  // 펫 그리기 (픽셀 스프라이트 + 걷기 bob)
   if (run.pet) {
     const px2 = run.pet.x - camX, py2 = run.pet.y - camY;
-    ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(PETS[run.pet.id].ico, px2, py2 + 6);
-    ctx.textAlign = 'left';
-    // 쿨타임 표시
-    const def = PETS[run.pet.id].effect;
-    if (def.cd && run.pet.cd > 0) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(px2 - 12, py2 - 18, 24, 4); ctx.fillStyle = '#ffd84a'; ctx.fillRect(px2 - 12, py2 - 18, 24 * (1 - run.pet.cd / def.cd), 4); }
-    // 실드 표시
-    if (run.p.shield) { ctx.strokeStyle = '#4af'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(W/2, H/2, 26, 0, Math.PI * 2); ctx.stroke(); }
+    const sprMap = { dog:'petDog', cat:'petCat', hamster:'petHam', parrot:'petParrot', lizard:'petLizard', owl:'petOwl', dragon:'petDragon', unicorn:'petUnicorn', phoenix:'petPhoenix' };
+    const atkMap = { dog:'petDogAtk', cat:'petCatAtk', hamster:'petHamAtk', parrot:'petParrotAtk', lizard:'petLizardAtk', owl:'petOwlAtk', dragon:'petDragonAtk', unicorn:'petUnicornAtk', phoenix:'petPhoenixAtk' };
+    const isAtk = run.pet.atkAnim > 0;
+    const sprId = isAtk && atkMap[run.pet.id] ? atkMap[run.pet.id] : sprMap[run.pet.id];
+    const petBob = run.p.moving ? Math.abs(Math.sin(run.t * 10 + .6)) * -2.5 : Math.sin(run.t * 4) * 1;
+    const atkShake = isAtk ? Math.sin(run.t * 40) * 2 : 0;
+    if (sprId && SPR[sprId]) {
+      const scale = PETS[run.pet.id].rarity === 'legend' ? 1.8 : 1.5;
+      drawSprite(ctx, SPR[sprId], px2 + atkShake, py2 + petBob, scale, run.p.facing < 0);
+    } else {
+      ctx.font = '22px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(PETS[run.pet.id].ico, px2, py2 + 6 + petBob);
+      ctx.textAlign = 'left';
+    }
+    const cdMax = petCd(run.pet.id, run.pet.level);
+    if (cdMax && run.pet.cd > 0) { ctx.fillStyle = 'rgba(0,0,0,.6)'; ctx.fillRect(px2 - 14, py2 - 22, 28, 4); ctx.fillStyle = '#ffd84a'; ctx.fillRect(px2 - 14, py2 - 22, 28 * (1 - run.pet.cd / cdMax), 4); }
+    if (run.p.shield) { ctx.save(); ctx.strokeStyle = '#4af'; ctx.lineWidth = 3; ctx.globalAlpha = 0.5 + 0.5 * Math.sin(run.t * 8); ctx.beginPath(); ctx.arc(W/2, H/2, 28, 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
   }
   if (run.stressActive > 0) { ctx.save(); ctx.strokeStyle = '#f80'; ctx.lineWidth = 3; ctx.globalAlpha = .6; ctx.beginPath(); ctx.arc(px, py, 140 * rangeMul(), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
   // 텍스트
