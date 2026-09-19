@@ -30,8 +30,8 @@
   .avgrid img.sel { border-color: #ffd84a; box-shadow: 0 0 8px #ffd84a; }
   .avprev { width: 64px; height: 64px; border: 3px solid #ffd84a; background: #333; object-fit: cover; image-rendering: pixelated; }
   #profileBar { cursor: pointer; }
-  #topbar { display: flex; gap: 6px; padding: 10px 10px 6px; background: #0b0b14; border-bottom: 3px solid #2a2a44; font-size: 13px; }
-  .res { flex: 1; background: #1c1c30; border: 2px solid #3a3a5c; padding: 5px 6px; text-align: center; white-space: nowrap; }
+  #topbar { display: flex; gap: 4px; padding: 8px 6px 6px; background: #0b0b14; border-bottom: 3px solid #2a2a44; font-size: 12px; flex-wrap: wrap; }
+  .res { flex: 1 1 auto; min-width: 0; background: #1c1c30; border: 2px solid #3a3a5c; padding: 4px 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: clamp(10px, 2.8vw, 13px); }
   .res b { color: #ffd84a; }
   #tabcontent { flex: 1; overflow-y: auto; padding: 14px; }
   #tabs { display: flex; height: 62px; background: #0b0b14; border-top: 3px solid #2a2a44; }
@@ -226,7 +226,8 @@
     <div class="result-box" style="max-width:380px;text-align:left">
       <h2 style="text-align:center">📬 메일함</h2>
       <div id="mailList" style="max-height:400px;overflow-y:auto;margin:10px 0"></div>
-      <div class="btn big" id="mailClose" style="background:#555">닫기</div>
+      <div class="btn" id="mailDelAll" style="width:100%;background:#a03030;margin-top:8px;display:none">🗑️ 내 메일 모두 지우기</div>
+      <div class="btn big" id="mailClose" style="background:#555;margin-top:6px">닫기</div>
     </div>
   </div>
 
@@ -262,9 +263,6 @@
         <div><span class="small">🧩 퍼즐</span><input id="admPuz" class="inp" type="number" value="0" style="margin:2px 0"></div>
       </div>
       <div class="btn big gold" id="admSend">📮 발송</div>
-      <hr style="border-color:#333;margin:12px 0">
-      <label class="small">메일 관리</label>
-      <div class="btn" id="admDelAllMail" style="width:100%;background:#a03030;margin-top:6px">🗑️ 내 모든 메일 지우기</div>
       <div class="btn" id="admClose" style="width:100%;background:#555;margin-top:8px">닫기</div>
     </div>
   </div>
@@ -459,17 +457,19 @@ function pullGacha() {
 }
 function equipBonus() {
   const acc = {}; if (!S.equipSlots) return acc;
+  const CAPS = { atk: 0.50, hp: 0.50, crit: 0.25, cd: 0.20, spd: 0.35, magnet: 0.30, coin: 0.40, dmgDown: 0.20 };
   for (const slot of ['weapon','armor','shoes','acc']) {
     const id = S.equipSlots[slot]; if (!id || !EQUIP[id]) continue;
     const lv = (S.equipLv && S.equipLv[id]) || 1;
-    const mul = 1 + (lv - 1) * 0.1;
+    const mul = 1 + (lv - 1) * 0.08;
     for (const k in EQUIP[id].bonus) acc[k] = (acc[k] || 0) + EQUIP[id].bonus[k] * mul;
   }
+  for (const k in acc) if (CAPS[k]) acc[k] = Math.min(acc[k], CAPS[k]);
   return acc;
 }
 function equipUpCost(id) { const lv = (S.equipLv && S.equipLv[id]) || 1; const e = EQUIP[id]; const base = [200, 500, 1500, 4000][e.tier]; return base * lv; }
 const OFFICE_LV_COST = [500, 2000, 8000]; // 5→10→15→20
-function officeSlots() { return 5 + ((S.office && S.office.level) || 1 - 1) * 5; }
+function officeSlots() { return 5 + (((S.office && S.office.level) || 1) - 1) * 5; }
 function officeBonus() {
   const acc = {};
   if (!S.office || !S.office.slots) return acc;
@@ -488,8 +488,16 @@ const EGG_INFO = {
 function petLvCost(petId) { const p = PETS[petId]; if (!p) return 0; const st = S.pets[petId] || {level:1,xp:0}; const base = p.rarity === 'legend' ? 1000 : (p.rarity === 'rare' ? 300 : 100); return base * st.level; }
 function activePet() { return S.activePet && S.pets[S.activePet] ? S.activePet : null; }
 function petDmg(id, lv) { const e = PETS[id].effect; const base = e.dmg || 0; return Math.round(base + lv * (PETS[id].rarity === 'legend' ? 6 : PETS[id].rarity === 'rare' ? 4 : 3)); }
-function petCd(id, lv) { const e = PETS[id].effect; let cd = e.cd; const t = (S.pets[id]||{}).trait; if (t === 'defense') cd *= 0.7; return cd; }
-function petRange(id, lv) { const e = PETS[id].effect; let r = e.range || e.r || 0; const t = (S.pets[id]||{}).trait; if (t === 'defense') r *= 1.3; return r; }
+function petCd(id, lv) { const e = PETS[id].effect; let cd = e.cd; const t = (S.pets[id]||{}).trait; if (t === 'defense') cd *= 0.75; else if (!t) cd *= 0.9; return cd; }
+function petRange(id, lv) { const e = PETS[id].effect; let r = e.range || e.r || 0; const t = (S.pets[id]||{}).trait; if (t === 'defense') r *= 1.2; return r; }
+function petTraitBonus() {
+  const pid = activePet(); if (!pid) return {};
+  const t = (S.pets[pid]||{}).trait;
+  if (t === 'attack') return { crit: 0.08, dmgUp: 0.15 };
+  if (t === 'defense') return { dmgDown: 0.12, healPerSec: 0.003 };
+  if (!t) return { coinBonus: 0.15, xpBonus: 0.2 };
+  return {};
+}
 function petStatText(id) {
   const st = S.pets[id] || {level:1}; const lv = st.level; const e = PETS[id].effect;
   const cd = petCd(id, lv).toFixed(1); const range = Math.round(petRange(id, lv));
@@ -837,53 +845,41 @@ const SPR = {
     '..DY.DY.YD.YD.......',
     '..DD.DD.DD.DD.......',
   ]},
-  workerF: { pal: { H:'#6a3420', h:'#904830', S:'#f4c290', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#803868', b:'#582848', T:'#d01830', R:'#903058', K:'#181818', M:'#e06868' }, rows: [
-    '.....hhhhh......',
-    '...hHHHHHHHHh...',
-    '..HHHHHHHHHHHH..',
-    '.HHHLLLLLLLLHHH.',
-    '.HHHSSSSSSSSHHH.',
-    '.HHHSEESSEESHHH.',
-    '.HHHSSSLLLSSHHH.',
-    '..HHSSSSMSSSHH..',
-    '..HHSSSSSSSSHH..',
-    '..HH..SSSS..HH..',
-    '..HHBBWWWWBBHH..',
-    '..bBBWWWTWWWBBb.',
-    '..bBBWWWTWWWBBb.',
-    '...BBWWWWWWBB...',
-    '...RRRRRRRRRR...',
-    '...RRRRRRRRRR...',
-    '....RRRRRRRR....',
-    '....RRRRRRRR....',
-    '....SS....SS....',
-    '...KKK...KKK....',
-    '...KKKK.KKKK....',
-    '...KKKK.KKKK....',
+  workerF: { pal: { H:'#6a3420', h:'#904830', S:'#f4c290', s:'#ddb080', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#803868', b:'#582848', T:'#d01830', R:'#903058', K:'#222', M:'#e06868' }, rows: [
+    '...hhhhhh...',
+    '..hHHHHHHh..',
+    '..HHHHHHHH..',
+    '.HHLLLLLLHH.',
+    '.HHSESSESHH.',
+    '.HHSSLLSSHH.',
+    '..HSSSMSSH..',
+    '..HSSSSssh..',
+    '...bBWWBb...',
+    '..bBWWTWBb..',
+    '..bBWWTWBb..',
+    '...BWWWWB...',
+    '...RRRRRR...',
+    '...RRRRRR...',
+    '....SS.SS...',
+    '...KK..KK...',
   ]},
-  worker: { pal: { H:'#1a0e08', S:'#f4c290', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#2855a0', b:'#1a3868', T:'#d01830', A:'#484050', P:'#28283a', K:'#181818' }, rows: [
-    '.....HHHHH......',
-    '...HHHHHHHHHH...',
-    '..HHHHHHHHHHHH..',
-    '..HHLLLLLLLLLHH.',
-    '..HHSSSSSSSSSHH.',
-    '..HHSSEESEESSHH.',
-    '..HHSSSLLLSSSHH.',
-    '..HHSSSSSSSSSHH.',
-    '...HSSSSSSSSSH..',
-    '....SSSSSSSS....',
-    '......SSS.......',
-    '...bBSWWWWSBb...',
-    '..bBBWWWTWWWBBb.',
-    '..bBBWWWTWWWBBb.',
-    '...BBWWWTWWBB...',
-    '...BBWWWWWWBB...',
-    '....AAAAAAAA....',
-    '....PPP..PPP....',
-    '....PP....PP....',
-    '...KKK...KKK....',
-    '...KKKK.KKKK....',
-    '...KKKK.KKKK....',
+  worker: { pal: { H:'#1a0e08', S:'#f4c290', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#2855a0', b:'#1a3868', T:'#d01830', A:'#484050', P:'#28283a', K:'#222' }, rows: [
+    '...HHHHHH...',
+    '..HHHHHHHH..',
+    '..HHHHHHHH..',
+    '..HLLLLLLH..',
+    '..HSESSESSH.',
+    '..HSSLLSSH..',
+    '..HSSSSSSH..',
+    '...SSSSSS...',
+    '...bBWWBb...',
+    '..bBWWTWBb..',
+    '..bBWWTWBb..',
+    '...BWWWWB...',
+    '....AAAA....',
+    '....PP.PP...',
+    '....SS.SS...',
+    '...KK..KK...',
   ]},
   // 일반 몬스터
   rat:    { pal: {G:'#8a8a95', D:'#4a4a55', P:'#f8b8c8', E:'#000'}, rows: [
@@ -952,7 +948,7 @@ const SPR = {
     'DBB....BBD',
     'BBBBBBBBBB',
     'BEBWWWWBEB',
-    'BBDDDDDDBB',
+    'BBDDDDDBB.',
     '.BBBBBBBB.',
     '..DDDDDD..',
   ]},
@@ -1031,11 +1027,11 @@ const SPR = {
   // 메인 보스 - AI 대체 로봇
   // === 2챕터 몬스터 스프라이트 ===
   moth: { pal: {B:'#c8b078', D:'#6a4a20', W:'#e0d0a0', E:'#000'}, rows: [
-    'W.WWWWWW.W',
-    '.WBBBBBBBW',
+    'W.WWWWWW.W.',
+    '.WBBBBBBBW.',
     'WBDBEBEBDBW',
-    '.WBBBBBBBW',
-    'W.WWWWWW.W',
+    '.WBBBBBBBW.',
+    'W.WWWWWW.W.',
   ]},
   kant: { pal: {B:'#3a2010', D:'#000', E:'#fff', H:'#5a3020'}, rows: [
     '.HH...HH...',
@@ -1045,8 +1041,8 @@ const SPR = {
     '.D.D.D.D.D.',
   ]},
   frog: { pal: {G:'#4a8a3a', D:'#2a5a1a', E:'#f00', W:'#a0d090'}, rows: [
-    '..EGGGGE..',
-    '.GGGGGGGGG',
+    '..EGGGGE...',
+    '.GGGGGGGGG.',
     'GWGGGGGGGWG',
     'GGGGGGGGGGG',
     '.GGGGGGGGG.',
@@ -1061,15 +1057,15 @@ const SPR = {
     'D.D.D..D.D.D',
   ]},
   snail: { pal: {S:'#c8a878', H:'#8a6040', D:'#4a3020', E:'#000'}, rows: [
-    '...HHHHHHHH..',
-    '..HDDDDDDDDH.',
-    '.HDSSSSSSSSDH',
+    '...HHHHHHHH...',
+    '..HDDDDDDDDH..',
+    '.HDSSSSSSSSDH.',
     'HDSSSSSSSSSSDH',
-    '.HDSSSSSSSSDH',
-    '..HDDDDDDDDH.',
-    '...HHHHHHHH..',
-    'SSSSSSSSSSSS.',
-    'EE......EESSS',
+    '.HDSSSSSSSSDH.',
+    '..HDDDDDDDDH..',
+    '...HHHHHHHH...',
+    'SSSSSSSSSSSS..',
+    'EE......EESSS.',
   ]},
   scorpion: { pal: {B:'#8a3020', D:'#5a1010', E:'#f88', Y:'#c8a020'}, rows: [
     '.......YYY..',
@@ -1082,14 +1078,14 @@ const SPR = {
   ]},
   // === 2챕터 미니보스 ===
   roachKing: { pal: {B:'#4a2a10', D:'#000', E:'#f22', W:'#8a5a3a', Y:'#ffd84a'}, rows: [
-    '...YYYYYYYY...',
-    '..WWWWWWWWWWW.',
-    '.WBBBBBBBBBBBW',
+    '...YYYYYYYY....',
+    '..WWWWWWWWWWW..',
+    '.WBBBBBBBBBBBW.',
     'WBBEBBBBBBBEBBW',
-    'WBBBBBBBBBBBBW',
-    'WBBBBBBBBBBBBW',
-    '.WBBBBBBBBBBW.',
-    '..D.D.D.D.D.D.',
+    'WBBBBBBBBBBBBW.',
+    'WBBBBBBBBBBBBW.',
+    '.WBBBBBBBBBBW..',
+    '..D.D.D.D.D.D..',
   ]},
   sewerSnake: { pal: {G:'#3a5a3a', D:'#1a3a1a', Y:'#e0e020', E:'#f00', T:'#a0f020'}, rows: [
     '...GGGGGG.....',
@@ -1189,13 +1185,13 @@ const SPR = {
     '..KK........KK..',
   ]},
   aiRobot: { pal: {M:'#7080a0', D:'#2a3040', L:'#33ff88', E:'#f22', R:'#c22', Y:'#ffd84a', W:'#fff', K:'#000'}, rows: [
-    '...KMMMMMMMMMMK...',
-    '..MDDMMMMMMMMDDM..',
-    '.MDLLDMMMMMMDLLDM.',
-    '.MDLEDMWWWWMDLEDM.',
-    '.MDLLDMWMMWMDLLDM.',
-    '.MDDDDMMMMMMDDDDM.',
-    '..MMMMMYYYYMMMMMM.',
+    '...KMMMMMMMMMMK..',
+    '..MDDMMMMMMMMDDM.',
+    '.MDLLDMMMMMMDLLDM',
+    '.MDLEDMWWWWMDLEDM',
+    '.MDLLDMWMMWMDLLDM',
+    '.MDDDDMMMMMMDDDDM',
+    '..MMMMMYYYYMMMMMM',
     'RMMMMMMMMMMMMMMMR',
     'RRMMMMMMMMMMMMMMR',
     'RRMDDDMMMMMMDDDMR',
@@ -1258,6 +1254,7 @@ function showPetInfo(id) {
     <div style="background:#12122a;border-radius:8px;padding:10px;margin:8px 0">
       <p style="color:#aaa;margin-bottom:6px">🎯 성향</p>
       <p>${st.trait === 'attack' ? '⚔️ 공격형' : st.trait === 'defense' ? '🛡 수비형' : '⚖️ 균형형'}</p>
+      <p class="small" style="color:#8ac;margin-top:4px">${st.trait === 'attack' ? '크리티컬 +8%, 데미지 +15%, 펫 데미지 ×1.35' : st.trait === 'defense' ? '피해 감소 12%, 초당 HP 0.3% 회복, 펫 쿨타임 -25%' : '코인 +15%, 경험치 +20%, 펫 쿨타임 -10%'}</p>
     </div>
     <p style="text-align:center;color:${active ? '#ffd84a' : '#666'};margin-top:8px">${active ? '✅ 현재 장착 중' : '미장착'}</p>
   `);
@@ -1323,10 +1320,16 @@ function drawSprite(ctx, spr, x, y, scale, flip, walkPhase) {
 // ---------------- 캐릭터 능력치 ----------------
 function workerSpr() { return S.charSkin === 'f' ? SPR.workerF : SPR.worker; }
 function heroStats() {
-  let atk = 14 + S.upLv * 2, hp = 200 + S.upLv * 25;
-  if (S.star >= 2) { atk *= 1.3; hp *= 1.3; }
-  if (S.star >= 4) { atk *= 1.3; hp *= 1.3; }
-  if (S.star >= 5) { atk *= 1.2; hp *= 1.2; }
+  // 수확체감: 레벨 1~20 +2, 21~40 +1, 41+ +0.5
+  let atkAdd = 0, hpAdd = 0;
+  const lv = S.upLv;
+  if (lv <= 20) { atkAdd = lv * 2; hpAdd = lv * 8; }
+  else if (lv <= 40) { atkAdd = 20 * 2 + (lv - 20) * 1; hpAdd = 20 * 8 + (lv - 20) * 5; }
+  else { atkAdd = 20 * 2 + 20 * 1 + (lv - 40) * 0.5; hpAdd = 20 * 8 + 20 * 5 + (lv - 40) * 3; }
+  let atk = 14 + atkAdd, hp = 200 + hpAdd;
+  if (S.star >= 2) { atk *= 1.15; hp *= 1.15; }
+  if (S.star >= 4) { atk *= 1.15; hp *= 1.15; }
+  if (S.star >= 5) { atk *= 1.1; hp *= 1.1; }
   const ob = officeBonus(), eb = equipBonus();
   if (ob.atk) atk *= (1 + ob.atk);
   if (ob.hp) hp *= (1 + ob.hp);
@@ -1698,7 +1701,7 @@ function renderEquip(c) {
   const card = document.createElement('div');
   card.className = 'card';
   card.innerHTML = `<h2 style="color:#7CFC7C;margin-bottom:8px">🎽 장비</h2>
-    <p class="small">챕터 클리어 시 드롭 or 상점에서 뽑기! 슬롯당 1개 장착 · 같은 아이템 3개 → 상위 등급 랜덤 · 🔨망치로 레벨업</p>
+    <p class="small">챕터 클리어 시 드롭 or 상점에서 뽑기! 슬롯당 1개 장착 · 같은 아이템 2개 → 합성(다음 등급) · 🔨망치로 강화</p>
     <p class="small" style="margin-top:8px;color:#ffd84a">✨ 세팅 보너스: ${bonusTxt}</p>
     <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin:10px 0">
     ${EQUIP_SLOTS.map(sl => {
@@ -1727,7 +1730,7 @@ function renderEquip(c) {
           return `${map[k]||k}${k==='cd'||k==='dmgDown'?'-':'+'}${(v*mul*100).toFixed(0)}%`;
         }).join(' ');
         const equipped = S.equipSlots[e.slot] === id;
-        const canMerge = cnt >= 3 && e.tier < 3;
+        const canMerge = cnt >= 2 && e.tier < 3;
         const upCost = equipUpCost(id);
         const canLevel = lv < 10;
         return `<div style="display:flex;align-items:center;gap:8px;padding:6px;border-bottom:1px solid #2a2a44">
@@ -1737,7 +1740,7 @@ function renderEquip(c) {
             <div class="btn ${equipped?'gold':'blue'}" data-eq-toggle="${id}" style="font-size:11px;padding:4px 8px">${equipped?'✓ 장착':'장착'}</div>
             <div class="btn ${canLevel && (S.hammer||0) >= upCost ? 'gold' : 'gray'}" data-eq-lvup="${id}" style="font-size:10px;padding:3px 6px">${canLevel ? '⬆️ 🔨'+fmt(upCost) : 'MAX'}</div>
             ${canLevel && cnt >= 2 ? `<div class="btn gold" data-eq-lvup2="${id}" style="font-size:10px;padding:3px 6px">⬆️ 중복 1개</div>` : ''}
-            ${canMerge ? `<div class="btn gold" data-eq-merge="${id}" style="font-size:10px;padding:3px 6px">🔀 3→다음</div>` : ''}
+            ${canMerge ? `<div class="btn gold" data-eq-merge="${id}" style="font-size:10px;padding:3px 6px">🔀 2개 합성</div>` : ''}
           </div>
         </div>`;
       }).join('') + '</div>'}`;
@@ -1772,9 +1775,9 @@ function renderEquip(c) {
   }));
   document.querySelectorAll('[data-eq-merge]').forEach(b => b.addEventListener('click', () => {
     const id = b.dataset.eqMerge, e = EQUIP[id];
-    if (S.equipInv[id] < 3) return toast('개수 부족!');
+    if (S.equipInv[id] < 2) return toast('개수 부족! (2개 필요)');
     if (e.tier >= 3) return toast('MAX 등급!');
-    S.equipInv[id] -= 3;
+    S.equipInv[id] -= 2;
     if (S.equipInv[id] <= 0) { delete S.equipInv[id]; if (S.equipSlots[e.slot] === id) S.equipSlots[e.slot] = null; }
     const nextPool = equipsByTier(e.tier + 1, e.slot);
     if (!nextPool.length) return toast('상위 아이템 없음');
@@ -1851,11 +1854,9 @@ function renderPetSection(c) {
     <div class="stat"><span>🍖 먹이</span><b>${fmt(S.food||0)}</b></div>
     <div class="stat"><span>🟢 일반 조각</span><b>${(S.shards||{}).common||0}</b></div>
     <div class="stat"><span>🔵 희귀 조각</span><b>${(S.shards||{}).rare||0}</b></div>
-    <div class="stat"><span>🟣 레어 조각</span><b>${(S.shards||{}).epic||0}</b></div>
     <div class="row" style="gap:6px;margin-top:8px;flex-wrap:wrap">
-      <div class="btn ${((S.shards||{}).common||0)>=3?'gold':'gray'}" id="btnMergeCS" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">일반3→희귀</div>
-      <div class="btn ${((S.shards||{}).rare||0)>=3?'gold':'gray'}" id="btnMergeRS" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">희귀3→레어</div>
-      <div class="btn ${((S.shards||{}).epic||0)>=3?'gold':'gray'}" id="btnMergeES" style="flex:1;text-align:center;font-size:11px;min-width:calc(33% - 4px)">레어3→전설</div>
+      <div class="btn ${((S.shards||{}).common||0)>=3?'gold':'gray'}" id="btnMergeCS" style="flex:1;text-align:center;font-size:11px;min-width:calc(50% - 4px)">일반3→희귀</div>
+      <div class="btn ${((S.shards||{}).rare||0)>=3?'gold':'gray'}" id="btnMergeRS" style="flex:1;text-align:center;font-size:11px;min-width:calc(50% - 4px)">희귀3→전설</div>
     </div>
     <div id="petListArea2" style="margin-top:10px"></div>`;
   c.appendChild(card);
@@ -1863,9 +1864,7 @@ function renderPetSection(c) {
   const bmc = document.getElementById('btnMergeCS');
   if (bmc) bmc.addEventListener('click', () => { if ((S.shards.common||0) < 3) return toast('조각 부족!'); S.shards.common -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'rare').map(([id]) => id); mergeGivePet(pick(p)); });
   const bmr = document.getElementById('btnMergeRS');
-  if (bmr) bmr.addEventListener('click', () => { if ((S.shards.rare||0) < 3) return toast('조각 부족!'); S.shards.rare -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'epic').map(([id]) => id); mergeGivePet(pick(p)); });
-  const bme = document.getElementById('btnMergeES');
-  if (bme) bme.addEventListener('click', () => { if ((S.shards.epic||0) < 3) return toast('조각 부족!'); S.shards.epic -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'legend').map(([id]) => id); mergeGivePet(pick(p)); });
+  if (bmr) bmr.addEventListener('click', () => { if ((S.shards.rare||0) < 3) return toast('조각 부족!'); S.shards.rare -= 3; const p = Object.entries(PETS).filter(([_,pp]) => pp.rarity === 'legend').map(([id]) => id); mergeGivePet(pick(p)); });
 }
 
 // ---------- 사냥 ----------
@@ -2060,7 +2059,7 @@ function startRun(ch, sub) {
 function endRun(win) {
   if (!run || run.over) return; run.over = true; audio.stopBgm();
   const lines = [];
-  const coinMul = 1 + (run.defs.stock || 0) * 0.05 + (officeBonus().coin || 0) + (equipBonus().coin || 0);
+  const coinMul = 1 + (run.defs.stock || 0) * 0.05 + (officeBonus().coin || 0) + (equipBonus().coin || 0) + (petTraitBonus().coinBonus || 0);
   let coins = 0;
   if (win) {
     const ch = run.chapter || 1;
@@ -2313,8 +2312,9 @@ function spawnEnemy(forceType) {
   if (run.chapter === 2) x = Math.max(-135, Math.min(135, x));
   if (run.arena) { const a = run.arena; const aa = Math.random() * Math.PI * 2; x = a.x + Math.cos(aa) * a.r * .9; y = a.y + Math.sin(aa) * a.r * .9; }
   const spdMul = d.flying ? 1 : 1.15;
-  const ch2Hp = run.chapter === 2 ? 1.05 : 1;
-  run.enemies.push({ type, x, y, hp: d.hp * sc * 0.65 * ch2Hp * subHpMul(), maxHp: d.hp * sc * 0.65 * ch2Hp * subHpMul(), spd: d.spd * rnd(.9, 1.1) * 0.74 * spdMul, dmg: d.dmg * 0.55 * (1 + run.t / 1800), size: d.size, strong: d.strong, erratic: d.erratic, wavy: d.wavy, ranged: d.ranged, flying: d.flying, wob: Math.random() * 10, hitT: 0, slowT: 0, stunT: 0, shootT: 1.5 });
+  const chHpMul = run.chapter >= 3 ? 1.5 : run.chapter === 2 ? 1.05 : 1;
+  const timeHpMul = 1 + run.t / 600;
+  run.enemies.push({ type, x, y, hp: d.hp * sc * 0.65 * chHpMul * timeHpMul * subHpMul(), maxHp: d.hp * sc * 0.65 * chHpMul * timeHpMul * subHpMul(), spd: d.spd * rnd(.9, 1.1) * 0.74 * spdMul, dmg: d.dmg * 0.55 * (1 + run.t / 1800), size: d.size, strong: d.strong, erratic: d.erratic, wavy: d.wavy, ranged: d.ranged, flying: d.flying, wob: Math.random() * 10, hitT: 0, slowT: 0, stunT: 0, shootT: 1.5 });
 }
 function spawnMiniBoss(idx) {
   const p = run.p;
@@ -2323,7 +2323,8 @@ function spawnMiniBoss(idx) {
   const type = MINIS[ch][idx];
   const d = ENEMIES[type];
   const ang = Math.random() * Math.PI * 2, r = Math.max(W, H) * .45;
-  const b = { type, x: p.x + Math.cos(ang) * r, y: p.y + Math.sin(ang) * r, hp: d.hp * (1 + S.upLv * .05) * 0.7 * subHpMul(), maxHp: 0, spd: d.spd, dmg: d.dmg, size: d.size, miniBoss: true, boss: false, hitT: 0, wob: 0, atkT: 2.0, atkKind: type };
+  const miniChMul = run.chapter >= 3 ? 1.5 : 1;
+  const b = { type, x: p.x + Math.cos(ang) * r, y: p.y + Math.sin(ang) * r, hp: d.hp * (1 + S.upLv * .05) * 0.7 * miniChMul * subHpMul(), maxHp: 0, spd: d.spd, dmg: d.dmg, size: d.size, miniBoss: true, boss: false, hitT: 0, wob: 0, atkT: 2.0, atkKind: type };
   b.maxHp = b.hp;
   run.enemies.push(b);
   banner('👑 미니보스: ' + d.name + '!');
@@ -2334,7 +2335,7 @@ function spawnBoss() {
   run.enemies = [];
   run.gemList = [];
   if (run.chapter === 3) {
-    const b = { type: 'vendingBoss', x: p.x, y: p.y - run.arena.r * .7, hp: 3600 * (1 + S.upLv * .05) * subHpMul(), maxHp: 0, spd: 50, dmg: 15, size: 44, boss: true, boss3: true, state: 'idle', st: 2.0, atkIdx: 0, hitT: 0, wob: 0, phase: 1, canT: 0 };
+    const b = { type: 'vendingBoss', x: p.x, y: p.y - run.arena.r * .7, hp: 5400 * (1 + S.upLv * .05) * subHpMul(), maxHp: 0, spd: 50, dmg: 15, size: 44, boss: true, boss3: true, state: 'idle', st: 2.0, atkIdx: 0, hitT: 0, wob: 0, phase: 1, canT: 0 };
     b.maxHp = b.hp; run.boss = b; run.enemies.push(b); run.phase = 'boss';
     banner('⚠️ 최종 보스: 거대 자판기 로봇!');
   } else if (run.chapter === 2) {
@@ -2355,15 +2356,15 @@ function fireStress() {
 }
 
 // ---------- 데미지 헬퍼 ----------
-function critChance(atkKey) { let c = starCritBonus(); const d = ATTACKS[atkKey] && ATTACKS[atkKey].def; if (d) c += (run.defs[d] || 0) * 0.05 + ((run.defs[d] || 0) === 5 ? 0.05 : 0); return c; }
+function critChance(atkKey) { let c = starCritBonus(); const d = ATTACKS[atkKey] && ATTACKS[atkKey].def; if (d) c += (run.defs[d] || 0) * 0.05 + ((run.defs[d] || 0) === 5 ? 0.05 : 0); const pb = petTraitBonus(); if (pb.crit) c += pb.crit; return c; }
 function sizeMult() { return 1; }
 function rangeMul() { const lv = run.defs.glasses || 0; let m = 1 + lv * 0.05 + (lv === 5 ? 0.05 : 0); if (run.pet && PETS[run.pet.id].effect.type === 'aim') m *= PETS[run.pet.id].effect.range; return m; }
-function cdMul() { const lv = run.defs.laptop || 0; return (1 - (lv * 0.05 + (lv === 5 ? 0.05 : 0))) * starCdMul(); }
+function cdMul() { return (1 - ((run.defs.laptop || 0) * 0.05 + ((run.defs.laptop || 0) === 5 ? 0.05 : 0))) * starCdMul(); }
 function atkSpdMul() { const lv = run.defs.drink || 0; return 1 + lv * 0.05 + (lv === 5 ? 0.05 : 0); }
-function dmgTakenMul() { const lv = run.defs.suit || 0; let m = 1 - (lv * 0.05 + (lv === 5 ? 0.05 : 0)); const eb = equipBonus(); if (eb.dmgDown) m -= eb.dmgDown; return Math.max(0.2, m); }
+function dmgTakenMul() { const lv = run.defs.suit || 0; let m = 1 - (lv * 0.05 + (lv === 5 ? 0.05 : 0)); const eb = equipBonus(); if (eb.dmgDown) m -= eb.dmgDown; const pb = petTraitBonus(); if (pb.dmgDown) m -= pb.dmgDown; return Math.max(0.2, m); }
 function moveMul() { const lv = run.defs.shoes || 0; let m = 1 + lv * 0.05 + (lv === 5 ? 0.05 : 0); const ob = officeBonus(); if (ob.spd) m *= (1 + ob.spd); const eb = equipBonus(); if (eb.spd) m *= (1 + eb.spd); return m; }
 function magnetMul() { const lv = run.defs.badge || 0; let m = 1 + lv * 0.05 + (lv === 5 ? 0.05 : 0); if (run.pet && PETS[run.pet.id].effect.type === 'magnet') m *= PETS[run.pet.id].effect.mul; const ob = officeBonus(); if (ob.magnet) m *= (1 + ob.magnet); const eb = equipBonus(); if (eb.magnet) m *= (1 + eb.magnet); return m; }
-function gemGainMul() { const lv = run.defs.promo || 0; return 1 + lv * 0.05 + (lv === 5 ? 0.05 : 0); }
+function gemGainMul() { const lv = run.defs.promo || 0; return (1 + lv * 0.05 + (lv === 5 ? 0.05 : 0)) * (1 + (petTraitBonus().xpBonus || 0)); }
 function inkSlow() { const lv = run.defs.ink || 0; return lv * 0.075; }
 function lvDmg(k) { const lv = run.skills[k] || 0; let m = 1; if (lv >= 2) m *= (k==='resign'?1.2:1.15); if (lv >= 4) m *= (k==='resign'?1.2:1.15); if (lv >= 5 && (k==='paper'||k==='stamp')) m *= 1.25; return m; }
 
@@ -2372,6 +2373,7 @@ function hitEnemy(e, dmg, atkKey, col) {
   let crit = false;
   if (atkKey && Math.random() < critChance(atkKey)) { dmg *= 2; crit = true; }
   dmg *= starPayrollAtkMul(run.p);
+  const pb = petTraitBonus(); if (pb.dmgUp) dmg *= (1 + pb.dmgUp);
   dmg = Math.round(dmg);
   e.hp -= dmg; e.hitT = .12;
   if (inkSlow() > 0) e.slowT = Math.max(e.slowT, 2.0);
@@ -2390,7 +2392,8 @@ function hurtPlayer(dmg) {
   const p = run.p; if (p.inv > 0) return;
   if (p.shield) { p.shield = false; p.inv = 1.0; run.texts.push({ x: p.x, y: p.y - 20, t: 0.6, txt: '🛡️ 막음!', col: '#4af' }); if (p.shield2) { p.shield = true; p.shield2 = false; } return; }
   dmg = dmg * dmgTakenMul();
-  if (run.chapter >= 2) dmg *= 1.6;
+  if (run.chapter >= 3) dmg *= 2.0;
+  else if (run.chapter >= 2) dmg *= 1.6;
   p.hp -= dmg; p.inv = 1.0;
   run.texts.push({ x: p.x, y: p.y - 20, t: .6, txt: '-' + Math.round(dmg), col: '#f55' });
   if (p.hp <= 0) { p.hp = 0; endRun(false); }
@@ -2549,7 +2552,11 @@ function update(dt) {
   const ws = p.webSlow || 1; p.x += mx * p.spd * moveMul() * ws * dt; p.y += my * p.spd * moveMul() * ws * dt; p.webSlow = 1;
   if (run.arena) { const a = run.arena, d = dist(p, a); if (d > a.r - 14) { const ang = Math.atan2(p.y - a.y, p.x - a.x); p.x = a.x + Math.cos(ang) * (a.r - 14); p.y = a.y + Math.sin(ang) * (a.r - 14); } } else if (run.chapter === 2) { p.x = Math.max(-140, Math.min(140, p.x)); }
   if (p.inv > 0) p.inv -= dt;
-  // 자연 회복 완전 제거 (사용자 요청)
+  // 펫 수비형 trait: 초당 체력 0.3% 회복
+  const ptb = petTraitBonus();
+  if (ptb.healPerSec) {
+    p.hp = Math.min(p.maxHp, p.hp + p.maxHp * ptb.healPerSec * dt);
+  }
 
   // 스폰
   if (run.phase === 'fight') {
@@ -2829,8 +2836,8 @@ function updatePet(dt) {
   if (pet.cd > 0) return;
   const lv = pet.level, dmg = petDmg(pet.id, lv), range = petRange(pet.id, lv);
   const trait = (S.pets[pet.id]||{}).trait;
-  const critChance = 0.1 + (trait === 'attack' ? 0.05 : 0) + (lv >= 10 && def.type === 'bite' ? 0.15 : 0);
-  const dmgMul = trait === 'attack' ? 1.3 : 1.0;
+  const critChance = 0.1 + (trait === 'attack' ? 0.12 : trait ? 0 : 0.03) + (lv >= 10 && def.type === 'bite' ? 0.15 : 0);
+  const dmgMul = trait === 'attack' ? 1.35 : !trait ? 1.1 : 1.0;
   const petLoc = { x: pet.x, y: pet.y };
   pet.cd = petCd(pet.id, lv);
   pet.atkAnim = 0.35; // 공격 애니메이션 0.35초
@@ -3745,7 +3752,9 @@ function renderMailList() {
   const rows = [];
   for (const m of (S.mailbox || [])) rows.push({ src: 'p', m });
   if (gmailCache) for (const m of gmailCache.mails) if (!(S.claimedGlobal || []).includes(m.id)) rows.push({ src: 'g', m });
-  if (!rows.length) { list.innerHTML = '<p class="small" style="text-align:center;color:#888;padding:20px 0">메일이 없어 📭</p>'; return; }
+  const delBtn = $('#mailDelAll');
+  if (!rows.length) { list.innerHTML = '<p class="small" style="text-align:center;color:#888;padding:20px 0">메일이 없어 📭</p>'; if(delBtn) delBtn.style.display='none'; return; }
+  if(delBtn) delBtn.style.display = rows.length > 0 ? '' : 'none';
   rows.sort((a, b) => (b.m.at || 0) - (a.m.at || 0));
   list.innerHTML = rows.map(r => {
     const items = MAIL_ITEMS.map(([k, label]) => (r.m.items && r.m.items[k] > 0) ? label + ' ' + fmt(r.m.items[k]) : null).filter(Boolean).join(' · ') || '아이템 없음';
@@ -3773,6 +3782,17 @@ function renderMailList() {
 }
 document.getElementById('btnMail').addEventListener('click', openMailbox);
 document.getElementById('mailClose').addEventListener('click', () => hideOv('ovMail'));
+document.getElementById('mailDelAll').addEventListener('click', async () => {
+  if (!confirm('정말 모든 메일을 지울까?')) return;
+  S.mailbox = [];
+  S.claimedGlobal = [];
+  S.claimedPersonal = [];
+  save(); updateMailBadge(); renderMailList();
+  if (S.binId) {
+    try { const data = await apiRead(S.binId); data.mailbox = []; data.claimedGlobal = []; data.claimedPersonal = []; await apiUpdate(S.binId, data); } catch(e) {}
+  }
+  toast('🗑️ 모든 메일 삭제 완료!');
+});
 
 // ================= 관리자 =================
 let admTargetAll = false;
@@ -3810,26 +3830,6 @@ document.getElementById('admSend').addEventListener('click', async () => {
     }
   } catch (e) { toast('❌ 발송 실패: ' + e.message); }
   unbusy(btn);
-});
-
-// 모든 메일 지우기
-document.getElementById('admDelAllMail').addEventListener('click', async () => {
-  if (!confirm('정말 모든 메일을 지울까? (개인 메일 + 전체 메일 수령 기록 초기화)')) return;
-  S.mailbox = [];
-  S.claimedGlobal = [];
-  S.claimedPersonal = [];
-  save(); updateMailBadge();
-  // 서버에도 반영
-  if (S.binId) {
-    try {
-      const data = await apiRead(S.binId);
-      data.mailbox = [];
-      data.claimedGlobal = [];
-      data.claimedPersonal = [];
-      await apiUpdate(S.binId, data);
-    } catch(e) {}
-  }
-  toast('🗑️ 모든 메일 삭제 완료!');
 });
 
 // 게스트 모드
