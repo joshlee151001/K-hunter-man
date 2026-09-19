@@ -262,6 +262,9 @@
         <div><span class="small">🧩 퍼즐</span><input id="admPuz" class="inp" type="number" value="0" style="margin:2px 0"></div>
       </div>
       <div class="btn big gold" id="admSend">📮 발송</div>
+      <hr style="border-color:#333;margin:12px 0">
+      <label class="small">메일 관리</label>
+      <div class="btn" id="admDelAllMail" style="width:100%;background:#a03030;margin-top:6px">🗑️ 내 모든 메일 지우기</div>
       <div class="btn" id="admClose" style="width:100%;background:#555;margin-top:8px">닫기</div>
     </div>
   </div>
@@ -580,68 +583,68 @@ const NORMAL = CH_POOLS[1].normal;
 const STRONG = CH_POOLS[1].strong;
 
 const SPR = {
-  // ===== 펫 스프라이트 (고퀄리티) =====
-  // 🐕 강아지 — 옆모습, 귀+꼬리+4다리
+  // ===== 펫 스프라이트 (고퀄리티 v2) =====
+  // 🐕 강아지 — 옆모습, 큰 귀+뚜렷한 주둥이+꼬리
   petDog: { pal: {B:'#c88a48',D:'#7a4a20',L:'#e8b868',E:'#000',N:'#3a2010',P:'#f8b8c8',W:'#fff'}, rows: [
-    '...BB...........',
-    '..BBBB..........',
-    '.BLEBBB.........',
-    '.BNBBB..........',
-    '..BBB..BBBBB.BB.',
-    '..BBBBBBBBBBBBB.',
-    '..LLBBBBBBBBBBB.',
-    '..BBBBBBBBBBBBB.',
-    '..BBBBBBBBBBBB..',
-    '...BB.BB.BB.BB..',
-    '...DD.DD.DD.DD..',
+    '..BBB...........',
+    '.BBBBB..........',
+    'BBLBBB..........',
+    'BBEBBB..........',
+    'BBNBBPP.........',
+    '..BBB.BBBBBB.B..',
+    '..BBBBBBBBBBB.B.',
+    '..LLBBBBBBBBBB..',
+    '..BBBBBBBBBBB...',
+    '..BB..BB.BB..BB.',
+    '..DD..DD.DD..DD.',
   ]},
   petDogAtk: { pal: {B:'#c88a48',D:'#7a4a20',L:'#e8b868',E:'#000',N:'#3a2010',P:'#f8b8c8',W:'#fff',F:'#f44'}, rows: [
-    '...BB...........',
-    '..BBBB..........',
-    '.BLEBBB.........',
-    '.BNBBBFF........',
-    '..BBBFFBBBBB.BB.',
-    '..BBBBBBBBBBBBB.',
-    '..LLBBBBBBBBBBB.',
-    '..BBBBBBBBBBBBB.',
-    '..BBBBBBBBBBBB..',
+    '..BBB...........',
+    '.BBBBB..........',
+    'BBLBBB..........',
+    'BBEBBBFFFF......',
+    'BBNBBPFFFF......',
+    '..BBB.BBBBBB.B..',
+    '..BBBBBBBBBBB.B.',
+    '..LLBBBBBBBBBB..',
+    '..BBBBBBBBBBB...',
     '..DB..DB.BD..BD.',
     '..DD..DD.DD..DD.',
   ]},
-  // 🐈 고양이 — 옆모습, 뾰족 귀+긴 꼬리
+  // 🐈 고양이 — 옆모습, 뾰족 삼각 귀+긴 꼬리
   petCat: { pal: {B:'#8a7860',D:'#5a4830',L:'#b8a880',E:'#7f8',N:'#3a2a20',W:'#fff',T:'#f8b8c8'}, rows: [
-    '.B...B..........',
-    '.BB.BB..........',
-    'BBEBBEBB........',
-    'BBTBBBTB........',
-    '.BBBBBB.BBBBB...',
+    '.B....B.........',
+    'BBB..BBB........',
+    'BBBBBBBB........',
+    'BEBTTBEB........',
+    '.BBBBBB.........',
+    '..BBBB.BBBBB....',
     '..BBBBBBBBBBB...',
-    '..LLBBBBBBBBBB..',
-    '..BBBBBBBBBBBBB.',
+    '..LLBBBBBBBBBBB.',
     '..BBBBBBBBBB..BB',
-    '...B..B..B..B...',
-    '..DD.DD.DD.DD...',
+    '..BB..BB.BB..B..',
+    '..DD..DD.DD..DD.',
   ]},
   petCatAtk: { pal: {B:'#8a7860',D:'#5a4830',L:'#b8a880',E:'#7f8',N:'#3a2a20',W:'#fff',T:'#f8b8c8',F:'#faa'}, rows: [
-    '.B...B..........',
-    '.BB.BB..........',
-    'BBEBBEBB........',
-    'BBTBBBTB..FFF...',
+    '.B....B.........',
+    'BBB..BBB........',
+    'BBBBBBBB........',
+    'BEBTTBEB.FFFF...',
     '.BBBBBB.FFFFF...',
+    '..BBBB.BBBBB....',
     '..BBBBBBBBBBB...',
-    '..LLBBBBBBBBBB..',
-    '..BBBBBBBBBBBBB.',
+    '..LLBBBBBBBBBBB.',
     '..BBBBBBBBBB..BB',
-    '..DB.DB..BD.BD..',
-    '..DD.DD..DD.DD..',
+    '..DB..DB.BD..BD.',
+    '..DD..DD.DD..DD.',
   ]},
-  // 🐹 햄스터 — 통통, 작고 귀엽게
+  // 🐹 햄스터 — 매우 동글, 볼주머니, 작은 귀
   petHam: { pal: {B:'#d8a878',D:'#8a6040',L:'#f0d0a0',E:'#000',P:'#f8b8c8',W:'#fff',C:'#ffc0a0'}, rows: [
-    '...BBBBB....',
+    '..BB...BB...',
     '..BBBBBBB...',
-    '.BBLBBBLBB..',
-    '.BBEBBBEBB..',
-    '.BCBBPBBCB..',
+    '.BBLLLLLBB..',
+    '.BCBEBBEBC..',
+    '.CCBBPBBCC..',
     '.BBBBBBBBBB.',
     '..BLLLLLLB..',
     '..BBBBBBBB..',
@@ -649,228 +652,238 @@ const SPR = {
     '...DD..DD...',
   ]},
   petHamAtk: { pal: {B:'#d8a878',D:'#8a6040',L:'#f0d0a0',E:'#000',P:'#f8b8c8',W:'#fff',C:'#ffc0a0',S:'#c96'}, rows: [
-    '...BBBBB....',
+    '..BB...BB...',
     '..BBBBBBB.SS',
-    '.BBLBBBLBB.S',
-    '.BBEBBBEBB..',
-    '.BCBBPBBCB..',
+    '.BBLLLLLBB.S',
+    '.BCBEBBEBC..',
+    '.CCBBPBBCC..',
     '.BBBBBBBBBB.',
     '..BLLLLLLB..',
     '..BBBBBBBB..',
     '...BB..BB...',
     '...DD..DD...',
   ]},
-  // 🦜 앵무새 — 옆모습, 날개+부리+꼬리깃
+  // 🦜 앵무새 — 옆모습, 곡선 부리+화려한 날개+긴 꼬리깃
   petParrot: { pal: {G:'#3a8a3a',L:'#5ac85a',R:'#f22',Y:'#ff8',E:'#000',B:'#22f',W:'#fff',O:'#f80'}, rows: [
-    '....GGG.........',
-    '...GGGGG........',
-    '..GGELGGG.......',
-    '..GGGGGYY.......',
-    '...GGGGG........',
-    '..LLGGGGGG......',
-    '.LLLGGGGGGG.....',
+    '...GGGG.........',
+    '..GGGGGG........',
+    '.GGELGGGG.......',
+    '.GGGGGGYY.......',
+    '..GGGGGY........',
+    '.LLGGGGGG.......',
+    'LLLBLGGGGGG.....',
+    'LLBBLGGGGGGG....',
     '.LLGGGGGGGG.....',
-    '..GGGGGGGG......',
-    '....GGGG........',
-    '....RR..........',
-    '....RRR.........',
-    '....R.R.........',
+    '....GGGGG.......',
+    '....RRRR........',
+    '....RRRR........',
+    '....R..R........',
   ]},
   petParrotAtk: { pal: {G:'#3a8a3a',L:'#5ac85a',R:'#f22',Y:'#ff8',E:'#000',B:'#22f',W:'#fff',O:'#f80',F:'#ffa'}, rows: [
-    '....GGG.........',
-    '...GGGGG........',
-    '..GGELGGG.......',
-    '..GGGGGYY.......',
-    '...GGGGGGFFF....',
-    '.LLLLGGGGGFFF...',
-    'LLLLGGGGGGG.....',
+    '...GGGG.........',
+    '..GGGGGG........',
+    '.GGELGGGG.......',
+    '.GGGGGGYY.......',
+    '..GGGGGGGFFF....',
+    '.LLGGGGGGFFF....',
+    'LLLBLGGGGGG.....',
+    'LLBBLGGGGGGG....',
     '.LLGGGGGGGG.....',
-    '..GGGGGGGG......',
-    '....GGGG........',
-    '....RR..........',
-    '....RRR.........',
-    '....R.R.........',
+    '....GGGGG.......',
+    '....RRRR........',
+    '....RRRR........',
+    '....R..R........',
   ]},
-  // 🦎 도마뱀 — 옆모습, 긴 몸+꼬리
+  // 🦎 도마뱀 — 옆모습, 등 가시+긴 꼬리
   petLizard: { pal: {G:'#4aa03a',D:'#2a601a',L:'#6ad04a',E:'#f00',T:'#f88',S:'#3a8020'}, rows: [
-    '......GGG...........',
-    '.....GGGGG..........',
-    '....GGELGG..........',
-    '....GGGGGG..........',
-    '.G..GGGGGGGGGG......',
-    '.GG.GGSSGGGGGGG.....',
-    '..GGGGSSGGGGGGGGG...',
-    '..GGGGGGGGGGGGGGGG..',
-    '...GGGGGGGGG..GGGGG.',
-    '...G..G..G..G...GGG.',
-    '..DD.DD.DD.DD....GG.',
+    '...L..L..L..........',
+    '...GGGGGGG..........',
+    '..GGELGGGG..........',
+    '.GGGGGGGGG..........',
+    '.GGSSGGGGGGGGG......',
+    '..GGSSGGGGGGGGGGG...',
+    '..GGGGGGGGGGGGGGGGG.',
+    '...GGGGGGGGG...GGGG.',
+    '...GG.GG.GG.G...GGG.',
+    '...DD.DD.DD.DD....G.',
   ]},
   petLizardAtk: { pal: {G:'#4aa03a',D:'#2a601a',L:'#6ad04a',E:'#f00',T:'#f88',S:'#3a8020',F:'#f44'}, rows: [
-    '......GGG...........',
-    '.....GGGGG..........',
-    '....GGELGG...FFFFF..',
-    '....GGGGGGFFFFF.....',
-    '.G..GGGGGGGGGG......',
-    '.GG.GGSSGGGGGGG.....',
-    '..GGGGSSGGGGGGGGG...',
-    '..GGGGGGGGGGGGGGGG..',
-    '...GGGGGGGGG..GGGGG.',
-    '..DG.DG..GD.GD..GG.',
-    '..DD.DD..DD.DD...GG.',
+    '...L..L..L..........',
+    '...GGGGGGG..........',
+    '..GGELGGGG..FFFFF...',
+    '.GGGGGGGGFFFFF......',
+    '.GGSSGGGGGGGGG......',
+    '..GGSSGGGGGGGGGGG...',
+    '..GGGGGGGGGGGGGGGGG.',
+    '...GGGGGGGGG...GGGG.',
+    '..DG.DG.GD.GD...GG.',
+    '..DD.DD.DD.DD.....G.',
   ]},
-  // 🦉 부엉이 — 정면, 큰 눈+깃털
+  // 🦉 부엉이 — 정면, 초대형 눈+귀깃+배 무늬
   petOwl: { pal: {B:'#8a6040',D:'#5a3020',L:'#b8884a',E:'#ff8',W:'#e8d8b0',K:'#000',O:'#f80'}, rows: [
     '..BB...BB...',
-    '..BBBBBBB...',
-    '.BBBBBBBBB..',
-    '.BBEBBBBEBB.',
-    '.BBKEBBEKBB.',
-    '.BBBBOBBBB..',
+    '.BBBB.BBBB..',
+    '.BBBBBBBBBB.',
+    'BBBEBBBBBEBB',
+    'BBBKEBBBKEBB',
+    '.BBBBOOBBB..',
     '.BWWWWWWWBB.',
-    '..BWBBBWBB..',
-    '..BBBBBBB...',
-    '..LLBBBLL...',
-    '...BBBBB....',
-    '...DD.DD....',
+    '.BBWBWBWBBB.',
+    '..BBBBBBBBB.',
+    '..LLBBBBBLL.',
+    '...BBBBBBB..',
+    '...DD..DD...',
   ]},
   petOwlAtk: { pal: {B:'#8a6040',D:'#5a3020',L:'#b8884a',E:'#ff8',W:'#e8d8b0',K:'#000',O:'#f80',F:'#ffa'}, rows: [
     '..BB...BB...........',
-    '..BBBBBBB...........',
-    '.BBBBBBBBB..........',
-    '.BBEBBBBEBB.........',
-    '.BBKEBBEKBB.........',
-    '.BBBBOBBBB..FFFF....',
-    '.BWWWWWWWBBFFFF.....',
-    '..BWBBBWBB..........',
-    '..BBBBBBB...........',
-    '..LLBBBLL...........',
-    '...BBBBB............',
-    '...DD.DD............',
+    '.BBBB.BBBB..........',
+    '.BBBBBBBBBB.........',
+    'BBBEBBBBBEBB........',
+    'BBBKEBBBKEBB........',
+    '.BBBBOOBBB.FFFFF...',
+    '.BWWWWWWWBBFFFFF....',
+    '.BBWBWBWBBB.........',
+    '..BBBBBBBBB.........',
+    '..LLBBBBBLL.........',
+    '...BBBBBBB..........',
+    '...DD..DD...........',
   ]},
-  // 🐲 용 — 날개 달린 드래곤
+  // 🐲 용 — 큰 날개+뿔+화염 입
   petDragon: { pal: {R:'#c02020',D:'#600',L:'#e84040',E:'#ff0',S:'#f80',W:'#f8a',K:'#000',F:'#f44'}, rows: [
-    '..W.......W.........',
-    '.WWW.....WWW........',
-    'WWRRR...RRRWW.......',
-    '.WRRRRRRRRRRW.......',
-    '..RRELRRLERR........',
-    '..RRRRRRRRRR........',
-    '..RRSSSSSRRR........',
-    '..RRRSSSSRRR........',
-    '..RRRRRRRRRR........',
-    '...RRRRRRRR.........',
-    '...RR.RR.RR.........',
-    '...DD.DD.DD.........',
+    '..W........W........',
+    '.WWWW....WWWW.......',
+    'WWWRRR..RRRWWW......',
+    '.WWRRRRRRRRRWW......',
+    '...RRELRRLERR.......',
+    '...RRRRRRRRRRR......',
+    '..RRRSSSSSSRRR......',
+    '..RRRRSSSRRRRR......',
+    '..RRRRRRRRRRRR......',
+    '...RRRRRRRRRR.......',
+    '...RR..RR..RR.......',
+    '...DD..DD..DD.......',
   ]},
   petDragonAtk: { pal: {R:'#c02020',D:'#600',L:'#e84040',E:'#ff0',S:'#f80',W:'#f8a',K:'#000',F:'#f44',G:'#fa0'}, rows: [
-    '..W.......W.........',
-    '.WWW.....WWW........',
-    'WWRRR...RRRWW.......',
-    '.WRRRRRRRRRRW.......',
-    '..RRELRRLERR.FFFFF..',
-    '..RRRRRRRRRRGGGFFF..',
-    '..RRSSSSSRRRGGGFF...',
-    '..RRRSSSSRRR........',
-    '..RRRRRRRRRR........',
-    '...RRRRRRRR.........',
-    '..DR.DR..RD.RD......',
-    '..DD.DD..DD.DD......',
+    '..W........W........',
+    '.WWWW....WWWW.......',
+    'WWWRRR..RRRWWW......',
+    '.WWRRRRRRRRRWW......',
+    '...RRELRRLERR.FFFF..',
+    '...RRRRRRRRRRGGGFF..',
+    '..RRRSSSSSSRRGGFF...',
+    '..RRRRSSSRRRRR......',
+    '..RRRRRRRRRRRR......',
+    '...RRRRRRRRRR.......',
+    '..DR..DR..RD..RD....',
+    '..DD..DD..DD..DD....',
   ]},
-  // 🦄 유니콘 — 옆모습, 뿔+갈기
+  // 🦄 유니콘 — 옆모습, 큰 뿔+갈기+말 체형
   petUnicorn: { pal: {W:'#ffffff',D:'#c8c8ff',L:'#e8e8ff',E:'#f88',H:'#ffd84a',P:'#f8b8f8',M:'#c8a0f8',K:'#000'}, rows: [
-    '......H.............',
     '.....HH.............',
-    '....HWWW............',
+    '....HHHW............',
     '...MWWWWW...........',
-    '..MWEWWWW...........',
-    '..MWWWWWW...........',
-    '...WWWW.WWWWWW......',
-    '...PWWWWWWWWWWW.....',
-    '....WWWDDWWWWWWW....',
-    '....WWWWWWWWWWW.....',
-    '.....WWWWWWWWW......',
-    '.....WW.WW.WW.......',
-    '....DD.DD.DD.DD.....',
+    '..MMWWWWWW..........',
+    '..MWEWWWWW..........',
+    '...WWWWWW...........',
+    '...PWWW.WWWWWW......',
+    '....WWWWWWWWWWWW....',
+    '....WWWDDWWWWWWWW...',
+    '....WWWWWWWWWWWWW...',
+    '.....WWWWWWWWWWW....',
+    '.....WW..WW..WW.....',
+    '....DD..DD..DD.DD...',
   ]},
   petUnicornAtk: { pal: {W:'#ffffff',D:'#c8c8ff',L:'#e8e8ff',E:'#f88',H:'#ffd84a',P:'#f8b8f8',M:'#c8a0f8',K:'#000',F:'#ffa',G:'#ff8'}, rows: [
-    '......H.......GGGG..',
-    '.....HH......GFFFF..',
-    '....HWWW.....GFFF...',
-    '...MWWWWW...........',
-    '..MWEWWWW...........',
-    '..MWWWWWW...........',
-    '...WWWW.WWWWWW......',
-    '...PWWWWWWWWWWW.....',
-    '....WWWDDWWWWWWW....',
-    '....WWWWWWWWWWW.....',
-    '.....WWWWWWWWW......',
-    '....DW.DW.WD.WD.....',
-    '....DD.DD.DD.DD.....',
+    '.....HH......GGGG..',
+    '....HHHW....GFFFF..',
+    '...MWWWWW...GFFF...',
+    '..MMWWWWWW..........',
+    '..MWEWWWWW..........',
+    '...WWWWWW...........',
+    '...PWWW.WWWWWW......',
+    '....WWWWWWWWWWWW....',
+    '....WWWDDWWWWWWWW...',
+    '....WWWWWWWWWWWWW...',
+    '.....WWWWWWWWWWW....',
+    '....DW..DW..WD..WD..',
+    '....DD..DD..DD..DD..',
   ]},
-  // 🐦 봉황 — 날개 활짝, 불꽃
+  // 🐦 봉황 — 날개 크게 펼침+불꽃 꼬리
   petPhoenix: { pal: {R:'#f80',Y:'#ff8',E:'#f00',W:'#fff',D:'#c40',L:'#ffa',K:'#000',G:'#f44'}, rows: [
-    'Y...........Y.......',
-    'YY..RRRRR..YY.......',
-    'YYR.RRRRR.RYY.......',
-    '.YRRRRRRRRRY........',
-    '..RRRELERRY.........',
-    '..RRRRRRRRR.........',
-    '..RRDDDDDRRR........',
-    '..RRRDDDDRRR........',
-    '..RRRRRRRRR.........',
-    '...YYYYYYY..........',
-    '...YY.Y.YY..........',
-    '...D..D..D..........',
+    'Y............Y......',
+    'YY...RRRR...YY......',
+    'YYR.RRRRRR.RYY......',
+    '.YRRRRRRRRRRRY......',
+    '..RRRRELERRY........',
+    '..RRRRRRRRRR........',
+    '..RRDDDDDDDRRR......',
+    '..RRRRDDDDRRR.......',
+    '..RRRRRRRRRR........',
+    '...YYYYYYYY.........',
+    '...YYY.Y.YYY........',
+    '...DD..D..DD........',
   ]},
   petPhoenixAtk: { pal: {R:'#f80',Y:'#ff8',E:'#f00',W:'#fff',D:'#c40',L:'#ffa',K:'#000',G:'#f44',F:'#ff0'}, rows: [
-    'Y...........Y.......',
-    'YY..RRRRR..YY.......',
-    'YYR.RRRRR.RYY.......',
-    '.YRRRRRRRRRY.FFFFF..',
-    '..RRRELERRY.GFFFFF..',
-    '..RRRRRRRRRGGGFFF...',
-    '..RRDDDDDRRR........',
-    '..RRRDDDDRRR........',
-    '..RRRRRRRRR.........',
-    '...YYYYYYY..........',
+    'Y............Y......',
+    'YY...RRRR...YY......',
+    'YYR.RRRRRR.RYY......',
+    '.YRRRRRRRRRRRY.FFFF.',
+    '..RRRRELERRY.GFFFF..',
+    '..RRRRRRRRRRGGFFF...',
+    '..RRDDDDDDDRRR......',
+    '..RRRRDDDDRRR.......',
+    '..RRRRRRRRRR........',
+    '...YYYYYYYY.........',
     '..DY.DY.YD.YD.......',
     '..DD.DD.DD.DD.......',
   ]},
-  workerF: { pal: { H: '#5a3418', S: '#f4c290', E: '#000', W: '#f0f0f0', B: '#7a3060', T: '#c8102e', R: '#8a2050', P: '#1a1a24', K: '#000' }, rows: [
-    '.....HHHH...',
-    '...HHHHHHHH.',
-    '..HHSSSSSHH.',
-    '..HHSSSSSHH.',
-    '..HHSEESEHH.',
-    '..HHSSSSSHH.',
-    '..HH.SSS.HH.',
-    '..H..SSS..H.',
-    '..BBWWWWWBB.',
-    '..BWWWTWWWB.',
-    '..BWWWTWWWB.',
-    '...RRRRRRR..',
-    '...RRRRRRR..',
-    '....S...S...',
-    '....S...S...',
-    '...KK...KK..',
+  workerF: { pal: { H:'#6a3420', h:'#904830', S:'#f4c290', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#803868', b:'#582848', T:'#d01830', R:'#903058', K:'#181818', M:'#e06868' }, rows: [
+    '.....hhhhh......',
+    '...hHHHHHHHHh...',
+    '..HHHHHHHHHHHH..',
+    '.HHHLLLLLLLLHHH.',
+    '.HHHSSSSSSSSHHH.',
+    '.HHHSEESSEESHHH.',
+    '.HHHSSSLLLSSHHH.',
+    '..HHSSSSMSSSHH..',
+    '..HHSSSSSSSSHH..',
+    '..HH..SSSS..HH..',
+    '..HHBBWWWWBBHH..',
+    '..bBBWWWTWWWBBb.',
+    '..bBBWWWTWWWBBb.',
+    '...BBWWWWWWBB...',
+    '...RRRRRRRRRR...',
+    '...RRRRRRRRRR...',
+    '....RRRRRRRR....',
+    '....RRRRRRRR....',
+    '....SS....SS....',
+    '...KKK...KKK....',
+    '...KKKK.KKKK....',
+    '...KKKK.KKKK....',
   ]},
-  worker: { pal: { H: '#3a2418', S: '#f4c290', E: '#000', W: '#f0f0f0', B: '#2a4a80', T: '#c8102e', P: '#1a1a24', K: '#000' }, rows: [
-    '.....HHHH...',
-    '...HHHHHHHH.',
-    '..HSSSSSSSH.',
-    '..HSSSSSSSH.',
-    '..HSEESEESH.',
-    '..HSSSSSSSH.',
-    '...SSSSSSS..',
-    '....SSSSS...',
-    '..BBWWWWWBB.',
-    '..BWWWTWWWB.',
-    '..BWWWTWWWB.',
-    '...BWWTWWB..',
-    '...BWWWWWB..',
-    '....P...P...',
-    '....P...P...',
-    '...KK...KK..',
+  worker: { pal: { H:'#1a0e08', S:'#f4c290', L:'#fad8b0', E:'#000', W:'#f0f0f0', B:'#2855a0', b:'#1a3868', T:'#d01830', A:'#484050', P:'#28283a', K:'#181818' }, rows: [
+    '.....HHHHH......',
+    '...HHHHHHHHHH...',
+    '..HHHHHHHHHHHH..',
+    '..HHLLLLLLLLLHH.',
+    '..HHSSSSSSSSSHH.',
+    '..HHSSEESEESSHH.',
+    '..HHSSSLLLSSSHH.',
+    '..HHSSSSSSSSSHH.',
+    '...HSSSSSSSSSH..',
+    '....SSSSSSSS....',
+    '......SSS.......',
+    '...bBSWWWWSBb...',
+    '..bBBWWWTWWWBBb.',
+    '..bBBWWWTWWWBBb.',
+    '...BBWWWTWWBB...',
+    '...BBWWWWWWBB...',
+    '....AAAAAAAA....',
+    '....PPP..PPP....',
+    '....PP....PP....',
+    '...KKK...KKK....',
+    '...KKKK.KKKK....',
+    '...KKKK.KKKK....',
   ]},
   // 일반 몬스터
   rat:    { pal: {G:'#8a8a95', D:'#4a4a55', P:'#f8b8c8', E:'#000'}, rows: [
@@ -1395,7 +1408,7 @@ function drawHero(cv) {
   ctx.fillStyle = '#243'; ctx.fillRect(0, 108, 220, 22);
   ctx.fillStyle = '#ffd84a'; for (let x=0;x<220;x+=12) ctx.fillRect(x, 118, 6, 1);
   // 캐릭터
-  drawSprite(ctx, workerSpr(), 110, 92, 2.2, false);
+  drawSprite(ctx, workerSpr(), 110, 92, 1.5, false);
 }
 
 // ---------- 상점 ----------
@@ -1925,7 +1938,7 @@ function wireHuntCard() {
     hctx.fillStyle = '#ffd84a'; for (let x=0;x<200;x+=10) hctx.fillRect(x, 75, 5, 1);
     hx += hdir * 1.2; if (hx > 170 || hx < 30) hdir *= -1;
     drawSprite(hctx, SPR.rat, hx + hdir * 40, 60, 2, hdir < 0);
-    drawSprite(hctx, workerSpr(), hx, 50, 1.8, hdir < 0);
+    drawSprite(hctx, workerSpr(), hx, 50, 1.5, hdir < 0);
   }, 100);
 }
 
@@ -2377,6 +2390,7 @@ function hurtPlayer(dmg) {
   const p = run.p; if (p.inv > 0) return;
   if (p.shield) { p.shield = false; p.inv = 1.0; run.texts.push({ x: p.x, y: p.y - 20, t: 0.6, txt: '🛡️ 막음!', col: '#4af' }); if (p.shield2) { p.shield = true; p.shield2 = false; } return; }
   dmg = dmg * dmgTakenMul();
+  if (run.chapter >= 2) dmg *= 1.6;
   p.hp -= dmg; p.inv = 1.0;
   run.texts.push({ x: p.x, y: p.y - 20, t: .6, txt: '-' + Math.round(dmg), col: '#f55' });
   if (p.hp <= 0) { p.hp = 0; endRun(false); }
@@ -2540,7 +2554,7 @@ function update(dt) {
   // 스폰
   if (run.phase === 'fight') {
     run.spawnT -= dt;
-    if (run.spawnT <= 0) { let rate = clamp(2.0 - run.t / 900 * 1.0, .8, 2.0); if (run.chapter === 2) rate *= 0.91; rate /= subCountMul(); run.spawnT = rate; const n = 1 + Math.floor(run.t / 360); for (let i = 0; i < n; i++) if (run.enemies.length < 60) spawnEnemy(); }
+    if (run.spawnT <= 0) { let rate = clamp(2.0 - run.t / 900 * 1.0, .8, 2.0); if (run.chapter >= 2) rate *= 0.65; rate /= subCountMul(); run.spawnT = rate; const baseN = 1 + Math.floor(run.t / 360); const n = run.chapter >= 2 ? baseN + 2 + Math.floor(run.t / 300) : baseN; const maxE = run.chapter >= 2 ? 100 : 60; for (let i = 0; i < n; i++) if (run.enemies.length < maxE) spawnEnemy(); }
     MINI_TIMES.forEach((mt, i) => { if (!run.miniDone[i] && run.t >= mt) { run.miniDone[i] = true; spawnMiniBoss(i); } });
     if (run.t >= RUN_LEN) spawnBoss();
   }
@@ -3421,7 +3435,7 @@ function drawGameLayer(p, camX, camY) {
   const px = W / 2, py = H / 2;
   if (p.inv > 0 && Math.floor(p.inv * 20) % 2 === 0) ctx.globalAlpha = .4;
   const walkPh = p.moving ? Math.sin(run.t * 10) : 0;
-  drawSprite(ctx, workerSpr(), px, py, 2.5, p.facing < 0, walkPh);
+  drawSprite(ctx, workerSpr(), px, py, 1.8, p.facing < 0, walkPh);
   ctx.globalAlpha = 1;
   // 펫 그리기 (픽셀 스프라이트 + 걷기 bob)
   if (run.pet) {
@@ -3486,7 +3500,8 @@ async function boot() {
     if (S.binId === binId && (S.updatedAt || 0) > (data.updatedAt || 0)) {
       // 단, 메일은 서버에서 병합 (운영자/다른 기기가 넣었을 수 있음)
       const myIds = new Set((S.mailbox || []).map(m => m.id));
-      for (const m of (data.mailbox || [])) if (!myIds.has(m.id)) { if (!S.mailbox) S.mailbox = []; S.mailbox.push(m); }
+      const claimed = new Set(S.claimedPersonal || []);
+      for (const m of (data.mailbox || [])) if (!myIds.has(m.id) && !claimed.has(m.id)) { if (!S.mailbox) S.mailbox = []; S.mailbox.push(m); }
       save();
     }
     else { S = Object.assign({}, DEFAULT_SAVE, data, { binId }); lastSyncData = JSON.stringify(S); saveLocal(); }
@@ -3747,7 +3762,7 @@ function renderMailList() {
   list.querySelectorAll('[data-claim]').forEach(b => b.addEventListener('click', () => {
     const [src, id] = b.dataset.claim.split('|');
     let mail = null;
-    if (src === 'p') { mail = (S.mailbox || []).find(m => m.id === id); if (mail) S.mailbox = S.mailbox.filter(m => m.id !== id); }
+    if (src === 'p') { mail = (S.mailbox || []).find(m => m.id === id); if (mail) { S.mailbox = S.mailbox.filter(m => m.id !== id); if (!S.claimedPersonal) S.claimedPersonal = []; S.claimedPersonal.push(id); } }
     else { mail = gmailCache && gmailCache.mails.find(m => m.id === id); if (mail) { if (!S.claimedGlobal) S.claimedGlobal = []; S.claimedGlobal.push(id); } }
     if (!mail) return;
     const got = applyMailItems(mail.items || {});
@@ -3795,6 +3810,26 @@ document.getElementById('admSend').addEventListener('click', async () => {
     }
   } catch (e) { toast('❌ 발송 실패: ' + e.message); }
   unbusy(btn);
+});
+
+// 모든 메일 지우기
+document.getElementById('admDelAllMail').addEventListener('click', async () => {
+  if (!confirm('정말 모든 메일을 지울까? (개인 메일 + 전체 메일 수령 기록 초기화)')) return;
+  S.mailbox = [];
+  S.claimedGlobal = [];
+  S.claimedPersonal = [];
+  save(); updateMailBadge();
+  // 서버에도 반영
+  if (S.binId) {
+    try {
+      const data = await apiRead(S.binId);
+      data.mailbox = [];
+      data.claimedGlobal = [];
+      data.claimedPersonal = [];
+      await apiUpdate(S.binId, data);
+    } catch(e) {}
+  }
+  toast('🗑️ 모든 메일 삭제 완료!');
 });
 
 // 게스트 모드
