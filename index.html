@@ -293,8 +293,18 @@ const DEFAULT_SAVE = {
 };
 let S = Object.assign({}, DEFAULT_SAVE);
 
-function loadLocal() { try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = Object.assign({}, DEFAULT_SAVE, JSON.parse(raw)); } catch (e) {} }
+function loadLocal() { try { const raw = localStorage.getItem(SAVE_KEY); if (raw) S = Object.assign({}, DEFAULT_SAVE, JSON.parse(raw)); migrateSave(); } catch (e) {} }
 function saveLocal() { try { localStorage.setItem(SAVE_KEY, JSON.stringify(S)); } catch (e) {} }
+function migrateSave() {
+  // v: 도전 클리어도 총 클리어에 포함 — 기존 유저 보정
+  if (!S._mig1) {
+    let extra = (S.clearsCh2 || 0) + (S.clearsCh3 || 0);
+    const sc = S.superClears || {};
+    for (const k in sc) extra += sc[k] || 0;
+    if (extra > 0) S.clears = (S.clears || 0) + extra;
+    S._mig1 = 1;
+  }
+}
 
 async function apiCreate(data) {
   const r = await fetch('https://api.jsonbin.io/v3/b', {
@@ -1427,8 +1437,8 @@ function renderShop(c) {
   c.innerHTML = `<h2>🏪 상점</h2>
     <div class="card"><div class="shop-item"><span class="ico">🎁</span><div style="flex:1"><h3>일일 보상</h3><p class="small">매일 자정(오전 12시) 리셋 · 🪙10 + 💵10 (${nextTxt})</p></div><div class="btn ${canDaily ? 'gold' : 'gray'}" id="buyDaily">${canDaily ? '받기' : '⏳ 대기'}</div></div></div>
     <div class="card"><div class="shop-item"><span class="ico">📅</span><div style="flex:1"><h3>주간 퍼즐</h3><p class="small">월요일마다 🧩1개 받기 (${weeklyTxt})</p></div><div class="btn ${canWeekly ? 'gold' : 'gray'}" id="buyWeekly">${canWeekly ? '받기' : '⏳ 대기'}</div></div></div>
-    <div class="card"><div class="shop-item"><span class="ico">💵</span><div style="flex:1"><h3>돈 100개</h3><p class="small">캐릭터 업그레이드 재료</p></div><div class="btn gold" id="buyWorm">🪙 300</div></div></div>
-    <div class="card"><div class="shop-item"><span class="ico">🧩</span><div style="flex:1"><h3>원하는 캐릭터 퍼즐 7개</h3><p class="small">별 업그레이드 재료<br>(지금은 K-직장인만 선택 가능)</p></div><div class="btn gold" id="buyPuz">🪙 1,200</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">💵</span><div style="flex:1"><h3>돈 100개</h3><p class="small">캐릭터 업그레이드 재료</p></div><div class="btn gold" id="buyWorm">🪙 150</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">🧩</span><div style="flex:1"><h3>원하는 캐릭터 퍼즐 5개</h3><p class="small">별 업그레이드 재료<br>(지금은 K-직장인만 선택 가능)</p></div><div class="btn gold" id="buyPuz">🪙 1,200</div></div></div>
     <h2 style="margin-top:16px">🥚 알 상점 (펫)</h2>
     ${Object.entries(EGG_INFO).map(([k,e]) => `<div class="card"><div class="shop-item"><span class="ico">${e.ico}</span><div style="flex:1"><h3>${e.name}</h3><p class="small">부화 시간 ${e.hatch/60000}분 · ${e.pool.length}종 중 랜덤</p></div><div class="btn ${(S.food||0) >= e.price ? 'gold' : 'gray'}" data-egg="${k}">🍖 ${fmt(e.price)}</div></div></div>`).join('')}
     ${(S.eggs||[]).length ? `<h2 style="margin-top:16px">🥚 부화 중인 알 (${(S.eggs||[]).length})</h2>${(S.eggs||[]).map((e,i) => { const left = e.hatchAt - Date.now(); const ready = left <= 0; return `<div class="card"><div class="shop-item"><span class="ico">${EGG_INFO[e.type].ico}</span><div style="flex:1"><h3>${EGG_INFO[e.type].name}</h3><p class="small">${ready ? '🎉 부화 준비 완료!' : '남은 시간: ' + fmtTime(left / 1000)}</p></div><div class="btn ${ready ? 'gold' : 'gray'}" data-hatch="${i}">${ready ? '부화!' : '⏳'}</div></div></div>`; }).join('')}` : ''}
@@ -1446,8 +1456,8 @@ function renderShop(c) {
     if ((S.lastWeekly || 0) >= thisWeekMonday()) return toast('이번 주는 이미 받았어!');
     S.puzzle += 1; S.lastWeekly = Date.now(); save(); refreshRes(); toast('📅 주간 보상: 🧩1개'); showTab('shop');
   });
-  $('#buyWorm').addEventListener('click', () => { if (S.coins < 300) return toast('코인이 부족해!'); S.coins -= 300; S.worm += 100; save(); refreshRes(); toast('💵 돈 +100'); });
-  $('#buyPuz').addEventListener('click', () => { if (S.coins < 1200) return toast('코인이 부족해!'); S.coins -= 1200; S.puzzle += 7; save(); refreshRes(); toast('🧩 K-직장인 퍼즐 +7'); });
+  $('#buyWorm').addEventListener('click', () => { if (S.coins < 150) return toast('코인이 부족해!'); S.coins -= 150; S.worm += 100; save(); refreshRes(); toast('💵 돈 +100'); });
+  $('#buyPuz').addEventListener('click', () => { if (S.coins < 1200) return toast('코인이 부족해!'); S.coins -= 1200; S.puzzle += 5; save(); refreshRes(); toast('🧩 K-직장인 퍼즐 +5'); });
   document.querySelectorAll('[data-egg]').forEach(btn => btn.addEventListener('click', () => {
     const k = btn.dataset.egg; const e = EGG_INFO[k];
     if ((S.food||0) < e.price) return toast('먹이가 부족해!');
@@ -2075,7 +2085,8 @@ function endRun(win) {
     S.coins += coins; S.worm += rewardWorm; S.puzzle += puz; S.food = (S.food || 0) + rewardFood; S.gem = (S.gem || 0) + rewardGem; S.hammer = (S.hammer || 0) + rewardHam;
     if (ch === 3) { S.clearsCh3 = (S.clearsCh3 || 0) + 1; }
     else if (ch === 2) { S.clearsCh2 = (S.clearsCh2 || 0) + 1; S.bestCh2 = RUN_LEN; }
-    else { S.clears++; S.best = RUN_LEN; }
+    else { S.best = RUN_LEN; }
+    S.clears = (S.clears || 0) + 1;
     const subKey = ch + '-' + (run.sub || 1);
     if (!S.superClears) S.superClears = {};
     S.superClears[subKey] = (S.superClears[subKey] || 0) + 1;
@@ -3511,7 +3522,7 @@ async function boot() {
       for (const m of (data.mailbox || [])) if (!myIds.has(m.id) && !claimed.has(m.id)) { if (!S.mailbox) S.mailbox = []; S.mailbox.push(m); }
       save();
     }
-    else { S = Object.assign({}, DEFAULT_SAVE, data, { binId }); lastSyncData = JSON.stringify(S); saveLocal(); }
+    else { S = Object.assign({}, DEFAULT_SAVE, data, { binId }); migrateSave(); lastSyncData = JSON.stringify(S); saveLocal(); }
   } catch (e) { toast('☁️ 서버 연결 실패, 로컬 데이터로 진행'); }
   hideOv('ovLoading'); updateProfileBar(); showTab('home');
   getGlobalMailBin(false).then(() => updateMailBadge()).catch(() => {});
@@ -3608,7 +3619,7 @@ wireFile($('#siFile'), $('#siAvGrid'), $('#siAvatarPreview'), d => siAvatarData 
 function busy(btn, txt) { btn.dataset.orig = btn.dataset.orig || btn.textContent; btn.textContent = txt; btn.classList.add('disabled'); }
 function unbusy(btn) { btn.textContent = btn.dataset.orig || btn.textContent; btn.classList.remove('disabled'); }
 function enterAccount(data, binId, msg) {
-  S = Object.assign({}, DEFAULT_SAVE, data, { binId }); lastSyncData = JSON.stringify(S); saveLocal();
+  S = Object.assign({}, DEFAULT_SAVE, data, { binId }); migrateSave(); lastSyncData = JSON.stringify(S); saveLocal();
   localStorage.setItem(BIN_ID_KEY, binId);
   document.querySelectorAll('.overlay').forEach(o => o.classList.add('hidden'));
   updateProfileBar(); showTab('home'); if (msg) toast(msg);
