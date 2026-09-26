@@ -264,8 +264,11 @@
         <div><span class="small">💎 보석</span><input id="admGem" class="inp" type="number" value="0" style="margin:2px 0"></div>
         <div><span class="small">🔨 망치</span><input id="admHam" class="inp" type="number" value="0" style="margin:2px 0"></div>
         <div><span class="small">🧩 퍼즐</span><input id="admPuz" class="inp" type="number" value="0" style="margin:2px 0"></div>
+        <div><span class="small">🔸 스킬 포인트</span><input id="admSkill" class="inp" type="number" value="0" style="margin:2px 0"></div>
       </div>
       <div class="btn big gold" id="admSend">📮 발송</div>
+      <div class="btn blue" id="admOnline" style="width:100%;margin-top:8px">👥 접속한 프로필 목록</div>
+      <div id="admOnlineList" style="max-height:300px;overflow-y:auto;margin-top:8px"></div>
       <div class="btn" id="admClose" style="width:100%;background:#555;margin-top:8px">닫기</div>
     </div>
   </div>
@@ -292,7 +295,7 @@ const DEFAULT_SAVE = {
   nick: '', num: 0, avatar: '', binId: '',
   coins: 0, worm: 0, puzzle: 0, upLv: 0, star: 0, lastHunt: Date.now(), bgm: true, sfx: true, clears: 0, best: 0,
   stats: { plays: 0, totalKills: 0, totalCoins: 0, totalPlayTime: 0, killByAttack: {} },
-  achievements: [], achievRewards: [], created: 0, pw: '', updatedAt: 0, lastDaily: 0, lastWeekly: 0, clearsCh2: 0, bestCh2: 0, clearsCh3: 0, clearsCh4: 0, superClears: {}, mailbox: [], claimedGlobal: [], charSkin: 'm', skinEquipped: 'default', skinsOwned: ['default'], skillPts: 0, skillLevels: {}, friends: [], food: 0, gem: 0, pets: {}, activePet: null, eggs: [], office: { slots: [null,null,null,null,null], level: 1 }, shards: { common: 0, rare: 0 }, equipInv: {}, equipSlots: { weapon: null, armor: null, shoes: null, acc: null }, equipLv: {}, hammer: 0,
+  achievements: [], achievRewards: [], created: 0, pw: '', updatedAt: 0, lastDaily: 0, lastWeekly: 0, lastBiweekly: 0, retroX3Given: {}, clearsCh2: 0, bestCh2: 0, clearsCh3: 0, clearsCh4: 0, superClears: {}, mailbox: [], claimedGlobal: [], charSkin: 'm', skinEquipped: 'default', skinsOwned: ['default'], skillPts: 0, skillLevels: {}, friends: [], food: 0, gem: 0, pets: {}, activePet: null, eggs: [], office: { slots: [null,null,null,null,null], level: 1 }, shards: { common: 0, rare: 0 }, equipInv: {}, equipSlots: { weapon: null, armor: null, shoes: null, acc: null }, equipLv: {}, hammer: 0,
 };
 let S = Object.assign({}, DEFAULT_SAVE);
 
@@ -1874,6 +1877,7 @@ function drawHero(cv) {
 // ---------- 상점 ----------
 function thisWeekMonday() { const d = new Date(); const dow = d.getDay(); const back = dow === 0 ? 6 : dow - 1; d.setDate(d.getDate() - back); d.setHours(0,0,0,0); return d.getTime(); }
 function nextMondayText() { const d = new Date(thisWeekMonday() + 7*24*60*60*1000); const now = new Date(); const ms = d - now; const days = Math.floor(ms/86400000); const h = Math.floor((ms%86400000)/3600000); return `다음 월요일 (${days}일 ${h}시간 후)`; }
+function thisBiweekStart() { const wm = thisWeekMonday(); const weekNum = Math.floor(wm / (7*86400000)); return (weekNum % 2 === 0 ? wm : wm - 7*86400000); }
 function lastNoon() { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0, 0).getTime(); }
 function nextNoon() { const ln = lastNoon(); return ln + 24*60*60*1000; }
 function renderShop(c) {
@@ -1883,7 +1887,8 @@ function renderShop(c) {
   const weeklyTxt = canWeekly ? '지금 받기!' : nextMondayText();
   c.innerHTML = `<h2>🏪 상점</h2>
     <div class="card"><div class="shop-item"><span class="ico">🎁</span><div style="flex:1"><h3>일일 보상</h3><p class="small">매일 자정(오전 12시) 리셋 · 🪙10 + 💵10 (${nextTxt})</p></div><div class="btn ${canDaily ? 'gold' : 'gray'}" id="buyDaily">${canDaily ? '받기' : '⏳ 대기'}</div></div></div>
-    <div class="card"><div class="shop-item"><span class="ico">📅</span><div style="flex:1"><h3>주간 퍼즐</h3><p class="small">월요일마다 🧩1개 + 🔸1개 받기 (${weeklyTxt})</p></div><div class="btn ${canWeekly ? 'gold' : 'gray'}" id="buyWeekly">${canWeekly ? '받기' : '⏳ 대기'}</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">📅</span><div style="flex:1"><h3>주간 퍼즐</h3><p class="small">월요일마다 🧩1개 받기 (${weeklyTxt})</p></div><div class="btn ${canWeekly ? 'gold' : 'gray'}" id="buyWeekly">${canWeekly ? '받기' : '⏳ 대기'}</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">🔸</span><div style="flex:1"><h3>격주 스킬 포인트</h3><p class="small">2주마다 🔸1개 받기 ${(S.lastBiweekly||0) < thisBiweekStart() ? '(지금 받기!)' : '(이번 격주 이미 받음)'}</p></div><div class="btn ${(S.lastBiweekly||0) < thisBiweekStart() ? 'gold' : 'gray'}" id="buyBiweekly">${(S.lastBiweekly||0) < thisBiweekStart() ? '받기' : '⏳ 대기'}</div></div></div>
     <div class="card"><div class="shop-item"><span class="ico">💵</span><div style="flex:1"><h3>돈 100개</h3><p class="small">캐릭터 업그레이드 재료</p></div><div class="btn gold" id="buyWorm">🪙 150</div></div></div>
     <div class="card"><div class="shop-item"><span class="ico">🧩</span><div style="flex:1"><h3>원하는 캐릭터 퍼즐 5개</h3><p class="small">별 업그레이드 재료<br>(지금은 K-직장인만 선택 가능)</p></div><div class="btn gold" id="buyPuz">🪙 1,200</div></div></div>
     <h2 style="margin-top:16px">🥚 알 상점 (펫)</h2>
@@ -1901,7 +1906,11 @@ function renderShop(c) {
   });
   $('#buyWeekly').addEventListener('click', () => {
     if ((S.lastWeekly || 0) >= thisWeekMonday()) return toast('이번 주는 이미 받았어!');
-    S.puzzle += 1; S.skillPts = (S.skillPts||0) + 1; S.lastWeekly = Date.now(); save(); refreshRes(); toast('📅 주간 보상: 🧩1 + 🔸1'); showTab('shop');
+    S.puzzle += 1; S.lastWeekly = Date.now(); save(); refreshRes(); toast('📅 주간 보상: 🧩1'); showTab('shop');
+  });
+  const bwBtn = $('#buyBiweekly'); if (bwBtn) bwBtn.addEventListener('click', () => {
+    if ((S.lastBiweekly || 0) >= thisBiweekStart()) return toast('이번 격주는 이미 받았어!');
+    S.skillPts = (S.skillPts||0) + 1; S.lastBiweekly = Date.now(); save(); refreshRes(); toast('🔸 격주 보상: 🔸1');  showTab('shop');
   });
   $('#buyWorm').addEventListener('click', () => { if (S.coins < 150) return toast('코인이 부족해!'); S.coins -= 150; S.worm += 100; save(); refreshRes(); toast('💵 돈 +100'); });
   $('#buyPuz').addEventListener('click', () => { if (S.coins < 1200) return toast('코인이 부족해!'); S.coins -= 1200; S.puzzle += 5; save(); refreshRes(); toast('🧩 K-직장인 퍼즐 +5'); });
@@ -3301,10 +3310,20 @@ function update(dt) {
     if (l < e.size * .6 + 12) hurtPlayer(e.dmg);
   }
   // 적 발사체
+  // 신화 펫이 있는지 확인 (원형 발사체 방어)
+  const hasMythPet = run.pet && PETS[run.pet.id] && PETS[run.pet.id].rarity === 'myth';
   for (const pr of run.eProjs) {
     pr.t -= dt;
     if (pr.homeP) { const dx2 = p.x - pr.x, dy2 = p.y - pr.y, l2 = Math.hypot(dx2, dy2) || 1; const sp = Math.hypot(pr.vx, pr.vy); pr.vx += dx2 / l2 * 300 * dt; pr.vy += dy2 / l2 * 300 * dt; const nl = Math.hypot(pr.vx, pr.vy) || 1; pr.vx = pr.vx / nl * sp; pr.vy = pr.vy / nl * sp; }
     pr.x += pr.vx * dt; pr.y += pr.vy * dt;
+    // 신화 펫: 원형 발사체(paper 아닌 것) 근접 시 자동 방어
+    if (hasMythPet && !pr.paper && dist(pr, p) < pr.r + 40 && !pr.blocked) {
+      pr.blocked = true; pr.t = -1;
+      run.fx.push({ ring: true, x: pr.x, y: pr.y, r: 30, t: 0.35, col: '#e060ff' });
+      for (let i = 0; i < 8; i++) run.fx.push({ x: pr.x, y: pr.y, vx: rnd(-140, 140), vy: rnd(-140, 140), t: 0.35, col: '#e060ff', r: 2 });
+      run.texts.push({ x: pr.x, y: pr.y - 10, t: 0.5, txt: '🛡️', col: '#e060ff' });
+      continue;
+    }
     if (dist(pr, p) < pr.r + 12) { hurtPlayer(pr.dmg); pr.t = -1; }
     if (pr.t <= 0) {
       if (pr.bubble) run.puddles.push({ x: pr.x, y: pr.y, r: 36, t: 3.5, life: 3.2, web: true, bub: true });
@@ -3538,10 +3557,9 @@ function updatePet(dt) {
       else hitEnemy(e, dmg * dmgMul, null, '#f80');
     }
   } else if (def.type === 'inferno') {
-    // 용황: 전체 화염 + 체력 회복
+    // 용황: 회전 화염 도형 (회전의자 스타일) + 체력 회복
     const r = def.r + (lv >= 10 ? 50 : 0);
-    run.fx.push({ ring: true, x: pet.x, y: pet.y, r, t: 0.6, col: '#f44' });
-    run.fx.push({ ring: true, x: pet.x, y: pet.y, r: r * 0.6, t: 0.4, col: '#ff0' });
+    run.fx.push({ spinFire: true, x: pet.x, y: pet.y, r, t: 0.9, col: '#f44', rot: Math.random() * Math.PI * 2 });
     for (const e of run.enemies) if (!e.dead && dist(petLoc, e) < r) hitEnemy(e, dmg * dmgMul, null, '#f44');
     p.hp = Math.min(p.maxHp, p.hp + def.heal * (lv >= 10 ? 2 : 1));
     run.texts.push({ x: p.x, y: p.y - 20, t: .8, txt: '+' + (def.heal * (lv >= 10 ? 2 : 1)) + 'HP', col: '#7f7', big: false });
@@ -4272,6 +4290,43 @@ function drawGameLayer(p, camX, camY) {
   for (const f of run.fx) {
     if (f.arc) { ctx.save(); ctx.globalAlpha = f.t / .2; ctx.fillStyle = f.col; ctx.beginPath(); ctx.moveTo(f.x - camX, f.y - camY); ctx.arc(f.x - camX, f.y - camY, f.r, f.a - f.half, f.a + f.half); ctx.closePath(); ctx.fill(); ctx.restore(); }
     else if (f.ring) { ctx.save(); ctx.globalAlpha = f.t / .3; ctx.strokeStyle = f.col; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(f.x - camX, f.y - camY, f.r * (1 - f.t / .3 * .3), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); }
+    else if (f.spinFire) {
+      // 회전 화염 도형 (별 모양이 회전하며 확장)
+      ctx.save();
+      const life = 0.9;
+      const prog = 1 - f.t / life;
+      const rNow = f.r * (0.3 + prog * 0.7);
+      const rot = (f.rot || 0) + prog * Math.PI * 4; // 4바퀴 회전
+      ctx.globalAlpha = Math.min(1, f.t / 0.3);
+      ctx.translate(f.x - camX, f.y - camY);
+      ctx.rotate(rot);
+      // 바깥 화염 별
+      const petals = 8;
+      ctx.fillStyle = '#f80';
+      ctx.beginPath();
+      for (let i = 0; i < petals * 2; i++) {
+        const a = i * Math.PI / petals;
+        const rr = (i % 2 === 0) ? rNow : rNow * 0.5;
+        if (i === 0) ctx.moveTo(Math.cos(a)*rr, Math.sin(a)*rr);
+        else ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr);
+      }
+      ctx.closePath(); ctx.fill();
+      // 안쪽 화염
+      ctx.rotate(-rot * 1.5);
+      ctx.fillStyle = '#ff4';
+      ctx.beginPath();
+      for (let i = 0; i < petals * 2; i++) {
+        const a = i * Math.PI / petals;
+        const rr = (i % 2 === 0) ? rNow * 0.6 : rNow * 0.3;
+        if (i === 0) ctx.moveTo(Math.cos(a)*rr, Math.sin(a)*rr);
+        else ctx.lineTo(Math.cos(a)*rr, Math.sin(a)*rr);
+      }
+      ctx.closePath(); ctx.fill();
+      // 중심 흰빛
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(0, 0, rNow * 0.15, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
     else if (f.bolt) { ctx.save(); ctx.globalAlpha = f.t / .25; ctx.strokeStyle = f.col; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(f.x1 - camX, f.y1 - camY); const mx = (f.x1 + f.x2) / 2 + rnd(-10, 10), my = (f.y1 + f.y2) / 2 + rnd(-10, 10); ctx.lineTo(mx - camX, my - camY); ctx.lineTo(f.x2 - camX, f.y2 - camY); ctx.stroke(); ctx.restore(); }
     else { ctx.fillStyle = f.col; ctx.fillRect(f.x - camX - f.r / 2, f.y - camY - f.r / 2, f.r, f.r); }
   }
@@ -4360,6 +4415,26 @@ async function boot() {
   hideOv('ovLoading'); updateProfileBar(); showTab('home');
   getGlobalMailBin(false).then(() => updateMailBadge()).catch(() => {});
   updateMailBadge();
+  // 디렉토리 등록 (친구/제작자 조회용)
+  registerInDirectory().catch(() => {});
+  // 소급 스킬 포인트: 옛날에 X-3 깬 경우 보상 지급
+  giveRetroactiveSkillPts();
+}
+function giveRetroactiveSkillPts() {
+  if (!S.superClears) return;
+  if (!S.retroX3Given) S.retroX3Given = {};
+  let given = 0;
+  for (const key of Object.keys(S.superClears)) {
+    if (key.endsWith('-3') && S.superClears[key] > 0 && !S.retroX3Given[key]) {
+      S.retroX3Given[key] = true;
+      given += 1;
+    }
+  }
+  if (given > 0) {
+    S.skillPts = (S.skillPts || 0) + given;
+    save(); refreshRes();
+    setTimeout(() => toast('🎁 X-3 소급 보상: 🔸' + given + '개!'), 1200);
+  }
 }
 function showOv(id) { document.querySelectorAll('.overlay').forEach(o => { if (['ovLevel','ovPause','ovResult'].includes(o.id)) return; o.classList.add('hidden'); }); $('#' + id).classList.remove('hidden'); }
 function hideOv(id) { $('#' + id).classList.add('hidden'); }
@@ -4478,7 +4553,14 @@ $('#liGo').addEventListener('click', async () => {
   if (!nick) return toast('닉네임을 입력해');
   const btn = $('#liGo'); busy(btn, '찾는 중...');
   try {
-    const ids = await findBinsByName(BIN_PREFIX + nick);
+    // 우선 디렉토리에서 찾기 (Access Key 호환)
+    let ids = [];
+    const dirUser = await findUserInDirectory(nick);
+    if (dirUser && dirUser.binId) ids = [dirUser.binId];
+    else {
+      // 폴백: 컬렉션 나열 시도
+      try { ids = await findBinsByName(BIN_PREFIX + nick); } catch (e) {}
+    }
     if (!ids.length) { toast('❌ 그 닉네임의 계정이 없어'); unbusy(btn); return; }
     const h = await hashPw(pw);
     let ok = null;
@@ -4546,9 +4628,16 @@ function showAccount() {
     const res = $('#friendResult');
     res.innerHTML = '<p class="small">🔍 검색 중...</p>';
     try {
-      const ids = await findBinsByName(BIN_PREFIX + nick);
-      if (!ids.length) { res.innerHTML = '<p class="small" style="color:#e55">❌ 찾을 수 없어</p>'; return; }
-      const d = await apiRead(ids[0]);
+      // 디렉토리에서 우선 검색 (Access Key 호환)
+      let binId = null;
+      const dirUser = await findUserInDirectory(nick);
+      if (dirUser && dirUser.binId) binId = dirUser.binId;
+      else {
+        try { const ids = await findBinsByName(BIN_PREFIX + nick); if (ids.length) binId = ids[0]; } catch (e) {}
+      }
+      if (!binId) { res.innerHTML = '<p class="small" style="color:#e55">❌ 찾을 수 없어</p>'; return; }
+      const d = await apiRead(binId);
+      const ids = [binId];
       const dst = d.stats || {};
       const dAch = (d.achievements||[]).length;
       res.innerHTML = `<div class="card" style="padding:10px;background:#1a1a30">
@@ -4596,6 +4685,36 @@ function showAccount() {
   $('#acLogout').addEventListener('click', () => { const b = $('#acLogout'); if (!ar) { ar = true; b.textContent = '진짜? 다시 누르면 로그아웃'; return; } clearTimeout(syncTimer); if (S.binId) apiUpdate(S.binId, S).catch(()=>{}); localStorage.removeItem(BIN_ID_KEY); localStorage.removeItem(SAVE_KEY); S = Object.assign({}, DEFAULT_SAVE); showOv('ovStart'); });
 }
 
+// ================= 유저 디렉토리 (access key용 우회) =================
+const DIRECTORY_NAME = 'KSM|__DIRECTORY__';
+const DIRECTORY_KEY = 'ksm_dir_bin_v1';
+let dirCache = null; // { id, users: {nick: {binId, num, avatar, lastActive, star, clears}} }
+async function getDirectoryBin(createIfMissing) {
+  let id = localStorage.getItem(DIRECTORY_KEY);
+  if (!id) {
+    try { const found = await findBinsByName(DIRECTORY_NAME); if (found.length) id = found[0]; } catch (e) {}
+    if (!id && createIfMissing) { try { id = await apiCreateNamed({ users: {} }, DIRECTORY_NAME); } catch (e) { return null; } }
+    if (id) localStorage.setItem(DIRECTORY_KEY, id);
+  }
+  if (!id) return null;
+  try { const data = await apiRead(id); dirCache = { id, users: data.users || {} }; return dirCache; } catch (e) { return null; }
+}
+async function registerInDirectory() {
+  if (!S.binId || !S.nick || GUEST) return;
+  try {
+    let dir = await getDirectoryBin(false);
+    if (!dir) dir = await getDirectoryBin(true);
+    if (!dir) return;
+    dir.users[S.nick] = { binId: S.binId, num: S.num || 0, avatar: S.avatar || '', lastActive: Date.now(), star: S.star || 0, clears: S.clears || 0 };
+    await apiUpdate(dir.id, { users: dir.users });
+  } catch (e) { console.log('directory register fail:', e); }
+}
+async function findUserInDirectory(nick) {
+  const dir = await getDirectoryBin(false);
+  if (dir && dir.users && dir.users[nick]) return dir.users[nick];
+  return null;
+}
+
 // ================= 메일 시스템 =================
 const ADMIN_PW = 'xodbs652410';
 const GMAIL_NAME = 'KSM|__GLOBALMAIL__';
@@ -4603,7 +4722,7 @@ const GMAIL_KEY = 'ksm_gmail_bin_v1';
 let gmailCache = null; // { id, mails }
 
 function mailId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
-const MAIL_ITEMS = [['coins','🪙 코인'],['worm','💵 돈'],['food','🍖 먹이'],['gem','💎 보석'],['hammer','🔨 망치'],['puzzle','🧩 퍼즐']];
+const MAIL_ITEMS = [['coins','🪙 코인'],['worm','💵 돈'],['food','🍖 먹이'],['gem','💎 보석'],['hammer','🔨 망치'],['puzzle','🧩 퍼즐'],['skillPts','🔸 스킬P']];
 
 async function getGlobalMailBin(createIfMissing) {
   let id = localStorage.getItem(GMAIL_KEY);
@@ -4711,7 +4830,7 @@ document.getElementById('admClose').addEventListener('click', () => hideOv('ovAd
 document.getElementById('admTargetOne').addEventListener('click', () => { admTargetAll = false; $('#admTargetOne').style.background = '#2f6fd9'; $('#admTargetAll').style.background = '#555'; $('#admNick').style.display = 'block'; });
 document.getElementById('admTargetAll').addEventListener('click', () => { admTargetAll = true; $('#admTargetAll').style.background = '#2f6fd9'; $('#admTargetOne').style.background = '#555'; $('#admNick').style.display = 'none'; });
 document.getElementById('admSend').addEventListener('click', async () => {
-  const items = { coins: +$('#admCoin').value || 0, worm: +$('#admWorm').value || 0, food: +$('#admFood').value || 0, gem: +$('#admGem').value || 0, hammer: +$('#admHam').value || 0, puzzle: +$('#admPuz').value || 0 };
+  const items = { coins: +$('#admCoin').value || 0, worm: +$('#admWorm').value || 0, food: +$('#admFood').value || 0, gem: +$('#admGem').value || 0, hammer: +$('#admHam').value || 0, puzzle: +$('#admPuz').value || 0, skillPts: +$('#admSkill').value || 0 };
   if (!Object.values(items).some(v => v > 0)) return toast('아이템을 1개 이상 넣어줘');
   const mail = { id: mailId(), from: '운영자', msg: $('#admMsg').value.trim() || '선물이 도착했어요!', items, at: Date.now() };
   const btn = $('#admSend'); busy(btn, '발송 중...');
@@ -4725,17 +4844,46 @@ document.getElementById('admSend').addEventListener('click', async () => {
     } else {
       const nick = $('#admNick').value.trim();
       if (!nick) { unbusy(btn); return toast('닉네임을 입력해'); }
-      const ids = await findBinsByName(BIN_PREFIX + nick);
-      if (!ids.length) { unbusy(btn); return toast('❌ 그 닉네임의 계정이 없어'); }
-      const data = await apiRead(ids[0]);
+      // 디렉토리 우선
+      let binId = null;
+      const du = await findUserInDirectory(nick);
+      if (du && du.binId) binId = du.binId;
+      else { try { const ids = await findBinsByName(BIN_PREFIX + nick); if (ids.length) binId = ids[0]; } catch (e) {} }
+      if (!binId) { unbusy(btn); return toast('❌ 그 닉네임의 계정이 없어'); }
+      const data = await apiRead(binId);
       data.mailbox = [...(data.mailbox || []), mail];
-      await apiUpdate(ids[0], data);
+      await apiUpdate(binId, data);
       // 나 자신에게 보낸 경우 로컬에도 반영
-      if (S.binId === ids[0]) { S.mailbox.push(mail); saveLocal(); updateMailBadge(); }
+      if (S.binId === binId) { S.mailbox.push(mail); saveLocal(); updateMailBadge(); }
       toast('📮 ' + nick + '에게 발송 완료!');
     }
   } catch (e) { toast('❌ 발송 실패: ' + e.message); }
   unbusy(btn);
+});
+document.getElementById('admOnline').addEventListener('click', async () => {
+  const list = $('#admOnlineList');
+  list.innerHTML = '<p class="small">📡 조회 중...</p>';
+  try {
+    const dir = await getDirectoryBin(false);
+    if (!dir || !dir.users) { list.innerHTML = '<p class="small" style="color:#e55">디렉토리 없음</p>'; return; }
+    const now = Date.now();
+    const users = Object.entries(dir.users).sort((a, b) => (b[1].lastActive||0) - (a[1].lastActive||0));
+    if (!users.length) { list.innerHTML = '<p class="small">아직 등록된 유저 없음</p>'; return; }
+    list.innerHTML = '<p class="small" style="color:#ffd84a">총 ' + users.length + '명</p>' + users.map(([nick, u]) => {
+      const ago = now - (u.lastActive || 0);
+      const mins = Math.floor(ago / 60000);
+      const hrs = Math.floor(mins / 60);
+      const days = Math.floor(hrs / 24);
+      const online = mins < 5;
+      const timeTxt = online ? '🟢 접속 중' : (days > 0 ? days + '일 전' : (hrs > 0 ? hrs + '시간 전' : mins + '분 전'));
+      return `<div class="card" style="padding:6px 8px;margin:4px 0;font-size:12px">
+        <div class="row" style="gap:6px;align-items:center">
+          <img src="${u.avatar || emojiAvatar('👔')}" style="width:32px;height:32px;border-radius:50%">
+          <div style="flex:1"><b style="color:${online?'#7f7':'#ccc'}">${nick}</b> <span class="small">#${String(u.num||0).padStart(4,'0')}</span><br><span class="small">${timeTxt} · ★${u.star||0} · ${u.clears||0}회</span></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) { list.innerHTML = '<p class="small" style="color:#e55">❌ ' + e.message + '</p>'; }
 });
 
 // 게스트 모드
