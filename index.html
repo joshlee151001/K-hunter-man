@@ -268,8 +268,34 @@
       </div>
       <div class="btn big gold" id="admSend">📮 발송</div>
       <div class="btn blue" id="admOnline" style="width:100%;margin-top:8px">👥 접속한 프로필 목록</div>
-      <div id="admOnlineList" style="max-height:300px;overflow-y:auto;margin-top:8px"></div>
       <div class="btn" id="admClose" style="width:100%;background:#555;margin-top:8px">닫기</div>
+    </div>
+  </div>
+
+  <!-- 접속 프로필 목록 (풀스크린) -->
+  <div id="ovOnlineList" class="overlay hidden">
+    <div class="result-box" style="max-width:420px;width:95%;max-height:90vh;overflow-y:auto;text-align:left">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">👥 접속한 프로필</h2>
+        <div class="btn" id="onlineBack" style="background:#555;font-size:12px;padding:6px 12px">← 뒤로</div>
+      </div>
+      <div class="row" style="gap:6px;margin-bottom:10px">
+        <div class="btn blue" id="onlineRefresh" style="flex:1;text-align:center;font-size:12px">🔄 새로고침</div>
+        <div class="btn" id="onlineDelAll" style="background:#a33;flex:1;text-align:center;font-size:12px">🗑️ 전체 삭제</div>
+      </div>
+      <p class="small" style="color:#888;margin-bottom:8px">← 왼쪽으로 밀면 개별 삭제 · 프로필 누르면 상세 보기</p>
+      <div id="onlineListArea"></div>
+    </div>
+  </div>
+
+  <!-- 프로필 상세 (풀스크린) -->
+  <div id="ovProfileDetail" class="overlay hidden">
+    <div class="result-box" style="max-width:420px;width:95%;max-height:90vh;overflow-y:auto;text-align:left">
+      <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h2 style="margin:0">👤 프로필 상세</h2>
+        <div class="btn" id="profDetailBack" style="background:#555;font-size:12px;padding:6px 12px">← 뒤로</div>
+      </div>
+      <div id="profDetailArea"></div>
     </div>
   </div>
 
@@ -1899,6 +1925,11 @@ function renderShop(c) {
     <div class="card"><div class="shop-item"><span class="ico">🎁</span><div style="flex:1"><h3>장비 10회 뽑기</h3><p class="small">한 번에 10개! 전설 확률↑ (5%)</p></div><div class="btn gold" id="buyGacha10">🔨 4,500</div></div></div>
     <h2 style="margin-top:16px">💼 일 (자동 순찰)</h2>
     ${renderHuntCardHTML()}
+    <h2 style="margin-top:16px">🔄 교환숍</h2>
+    <p class="small" style="color:#888;margin-bottom:6px">남는 자원을 다른 자원으로 바꿔!</p>
+    <div class="card"><div class="shop-item"><span class="ico">🧩</span><div style="flex:1"><h3>K-직장인 퍼즐 1개</h3><p class="small">별 업그레이드 재료 (개당 240 → <b style="color:#7f7">230</b>, 10 할인!)</p></div><div class="btn ${S.coins >= 230 ? 'gold' : 'gray'}" id="exPuz">🪙 230</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">🪙</span><div style="flex:1"><h3>보석 → 코인 교환</h3><p class="small">💎50 → 🪙50 교환</p></div><div class="btn ${(S.gem||0) >= 50 ? 'gold' : 'gray'}" id="exGem">💎 50</div></div></div>
+    <div class="card"><div class="shop-item"><span class="ico">🔸</span><div style="flex:1"><h3>스킬 포인트 1개</h3><p class="small">코인으로 🔸 구매</p></div><div class="btn ${S.coins >= 4000 ? 'gold' : 'gray'}" id="exSkill">🪙 4,000</div></div></div>
 `;
   $('#buyDaily').addEventListener('click', () => {
     if ((S.lastDaily || 0) >= lastNoon()) return toast('오늘은 이미 받았어! 자정 지나면 다시 와');
@@ -1912,8 +1943,23 @@ function renderShop(c) {
     if ((S.lastBiweekly || 0) >= thisBiweekStart()) return toast('이번 격주는 이미 받았어!');
     S.skillPts = (S.skillPts||0) + 1; S.lastBiweekly = Date.now(); save(); refreshRes(); toast('🔸 격주 보상: 🔸1');  showTab('shop');
   });
-  $('#buyWorm').addEventListener('click', () => { if (S.coins < 150) return toast('코인이 부족해!'); S.coins -= 150; S.worm += 100; save(); refreshRes(); toast('💵 돈 +100'); });
-  $('#buyPuz').addEventListener('click', () => { if (S.coins < 1200) return toast('코인이 부족해!'); S.coins -= 1200; S.puzzle += 5; save(); refreshRes(); toast('🧩 K-직장인 퍼즐 +5'); });
+  // 홀드-반복 헬퍼: 짧게 누르면 1회, 길게 누르면 연속 구매
+  function bindHoldBuy(btn, doOnce, label) {
+    if (!btn) return;
+    let holdT = null, repT = null, count = 0, active = false;
+    const stop = () => { if (holdT) { clearTimeout(holdT); holdT = null; } if (repT) { clearInterval(repT); repT = null; } if (active && count > 0) toast(label ? label + ' x' + count : '구매 x' + count); active = false; count = 0; };
+    const tryBuy = () => { const ok = doOnce(); if (ok) { count++; refreshRes(); } else { stop(); } return ok; };
+    const start = (e) => { e.preventDefault(); active = true; count = 0; if (!tryBuy()) return; holdT = setTimeout(() => { repT = setInterval(tryBuy, 80); }, 400); };
+    btn.addEventListener('mousedown', start);
+    btn.addEventListener('touchstart', start, {passive:false});
+    ['mouseup','mouseleave','touchend','touchcancel'].forEach(ev => btn.addEventListener(ev, stop));
+    window.addEventListener('mouseup', stop);
+  }
+  bindHoldBuy($('#buyWorm'), () => { if (S.coins < 150) { toast('코인 부족!'); return false; } S.coins -= 150; S.worm += 100; save(); return true; }, '💵 +100');
+  bindHoldBuy($('#buyPuz'), () => { if (S.coins < 1200) { toast('코인 부족!'); return false; } S.coins -= 1200; S.puzzle += 5; save(); return true; }, '🧩 +5');
+  bindHoldBuy($('#exPuz'), () => { if (S.coins < 230) { toast('코인 부족!'); return false; } S.coins -= 230; S.puzzle += 1; save(); return true; }, '🧩 +1');
+  bindHoldBuy($('#exGem'), () => { if ((S.gem||0) < 50) { toast('💎 부족!'); return false; } S.gem -= 50; S.coins += 50; save(); return true; }, '💎→🪙');
+  bindHoldBuy($('#exSkill'), () => { if (S.coins < 4000) { toast('코인 부족!'); return false; } S.coins -= 4000; S.skillPts = (S.skillPts||0) + 1; save(); return true; }, '🔸 +1');
   document.querySelectorAll('[data-egg]').forEach(btn => btn.addEventListener('click', () => {
     const k = btn.dataset.egg; const e = EGG_INFO[k];
     if ((S.food||0) < e.price) return toast('먹이가 부족해!');
@@ -3316,8 +3362,8 @@ function update(dt) {
     pr.t -= dt;
     if (pr.homeP) { const dx2 = p.x - pr.x, dy2 = p.y - pr.y, l2 = Math.hypot(dx2, dy2) || 1; const sp = Math.hypot(pr.vx, pr.vy); pr.vx += dx2 / l2 * 300 * dt; pr.vy += dy2 / l2 * 300 * dt; const nl = Math.hypot(pr.vx, pr.vy) || 1; pr.vx = pr.vx / nl * sp; pr.vy = pr.vy / nl * sp; }
     pr.x += pr.vx * dt; pr.y += pr.vy * dt;
-    // 신화 펫: 원형 발사체(paper 아닌 것) 근접 시 자동 방어
-    if (hasMythPet && !pr.paper && dist(pr, p) < pr.r + 40 && !pr.blocked) {
+    // 신화 펫: 모든 적 발사체(부장님/일반 몬스터의 원형 공격 포함) 근접 시 자동 방어
+    if (hasMythPet && dist(pr, p) < pr.r + 50 && !pr.blocked) {
       pr.blocked = true; pr.t = -1;
       run.fx.push({ ring: true, x: pr.x, y: pr.y, r: 30, t: 0.35, col: '#e060ff' });
       for (let i = 0; i < 8; i++) run.fx.push({ x: pr.x, y: pr.y, vx: rnd(-140, 140), vy: rnd(-140, 140), t: 0.35, col: '#e060ff', r: 2 });
@@ -4860,8 +4906,9 @@ document.getElementById('admSend').addEventListener('click', async () => {
   } catch (e) { toast('❌ 발송 실패: ' + e.message); }
   unbusy(btn);
 });
-document.getElementById('admOnline').addEventListener('click', async () => {
-  const list = $('#admOnlineList');
+let _onlineDelAllArm = false;
+async function renderOnlineList() {
+  const list = $('#onlineListArea');
   list.innerHTML = '<p class="small">📡 조회 중...</p>';
   try {
     const dir = await getDirectoryBin(false);
@@ -4869,22 +4916,173 @@ document.getElementById('admOnline').addEventListener('click', async () => {
     const now = Date.now();
     const users = Object.entries(dir.users).sort((a, b) => (b[1].lastActive||0) - (a[1].lastActive||0));
     if (!users.length) { list.innerHTML = '<p class="small">아직 등록된 유저 없음</p>'; return; }
-    list.innerHTML = '<p class="small" style="color:#ffd84a">총 ' + users.length + '명</p>' + users.map(([nick, u]) => {
+    list.innerHTML = `<p class="small" style="color:#ffd84a">총 ${users.length}명</p>` + users.map(([nick, u]) => {
       const ago = now - (u.lastActive || 0);
       const mins = Math.floor(ago / 60000);
       const hrs = Math.floor(mins / 60);
       const days = Math.floor(hrs / 24);
       const online = mins < 5;
       const timeTxt = online ? '🟢 접속 중' : (days > 0 ? days + '일 전' : (hrs > 0 ? hrs + '시간 전' : mins + '분 전'));
-      return `<div class="card" style="padding:6px 8px;margin:4px 0;font-size:12px">
-        <div class="row" style="gap:6px;align-items:center">
-          <img src="${u.avatar || emojiAvatar('👔')}" style="width:32px;height:32px;border-radius:50%">
-          <div style="flex:1"><b style="color:${online?'#7f7':'#ccc'}">${nick}</b> <span class="small">#${String(u.num||0).padStart(4,'0')}</span><br><span class="small">${timeTxt} · ★${u.star||0} · ${u.clears||0}회</span></div>
+      const dateTxt = u.lastActive ? new Date(u.lastActive).toLocaleString('ko-KR', {month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}) : '기록 없음';
+      return `<div class="onlineRow" data-nick="${nick.replace(/"/g,'&quot;')}" style="position:relative;overflow:hidden;margin:6px 0">
+        <div style="position:absolute;inset:0;background:#a33;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;color:#fff;font-weight:bold;font-size:14px;border-radius:8px">🗑️ 삭제</div>
+        <div class="onlineCard card" style="position:relative;padding:8px 10px;font-size:13px;transform:translateX(0);transition:transform 0.2s;touch-action:pan-y;cursor:pointer">
+          <div class="row" style="gap:8px;align-items:center">
+            <img src="${u.avatar || emojiAvatar('👔')}" style="width:40px;height:40px;border-radius:50%;border:2px solid ${online?'#7f7':'#555'}">
+            <div style="flex:1"><b style="color:${online?'#7f7':'#ccc'};font-size:14px">${nick}</b> <span class="small">#${String(u.num||0).padStart(4,'0')}</span><br><span class="small">${timeTxt} · ★${u.star||0} · ${u.clears||0}회</span><br><span class="small" style="color:#888">${dateTxt}</span></div>
+            <span style="color:#666;font-size:16px">›</span>
+          </div>
         </div>
       </div>`;
     }).join('');
+
+    // 스와이프 삭제 + 클릭 상세보기
+    list.querySelectorAll('.onlineRow').forEach(row => {
+      const card = row.querySelector('.onlineCard');
+      let startX = 0, curX = 0, dragging = false, moved = false;
+      const start = (x) => { startX = x; curX = 0; dragging = true; moved = false; card.style.transition = 'none'; };
+      const move = (x) => { if (!dragging) return; curX = Math.min(0, x - startX); if (Math.abs(curX) > 5) moved = true; card.style.transform = 'translateX(' + curX + 'px)'; };
+      const end = async () => {
+        if (!dragging) return; dragging = false;
+        card.style.transition = 'transform 0.2s';
+        if (curX < -80) {
+          card.style.transform = 'translateX(-100%)';
+          const nick = row.dataset.nick;
+          setTimeout(async () => {
+            try { const d = await getDirectoryBin(false); if (d && d.users[nick]) { delete d.users[nick]; await apiUpdate(d.id, { users: d.users }); toast('삭제됨: ' + nick); renderOnlineList(); } } catch (e) { toast('❌ ' + e.message); renderOnlineList(); }
+          }, 200);
+        } else {
+          card.style.transform = 'translateX(0)';
+          if (!moved) {
+            // 클릭 → 상세 보기
+            showProfileDetail(row.dataset.nick);
+          }
+        }
+      };
+      card.addEventListener('touchstart', e => start(e.touches[0].clientX), {passive:true});
+      card.addEventListener('touchmove', e => move(e.touches[0].clientX), {passive:true});
+      card.addEventListener('touchend', end);
+      card.addEventListener('mousedown', e => start(e.clientX));
+      const mmHandler = e => move(e.clientX);
+      const muHandler = () => end();
+      window.addEventListener('mousemove', mmHandler);
+      window.addEventListener('mouseup', muHandler);
+    });
   } catch (e) { list.innerHTML = '<p class="small" style="color:#e55">❌ ' + e.message + '</p>'; }
+}
+
+async function showProfileDetail(nick) {
+  hideOv('ovOnlineList'); showOv('ovProfileDetail');
+  const area = $('#profDetailArea');
+  area.innerHTML = '<p class="small">📡 조회 중...</p>';
+  try {
+    const dir = await getDirectoryBin(false);
+    if (!dir || !dir.users[nick]) { area.innerHTML = '<p class="small" style="color:#e55">유저를 찾을 수 없어</p>'; return; }
+    const u = dir.users[nick];
+    const d = await apiRead(u.binId);
+    const st = d.stats || {};
+    const ach = (d.achievements || []).length;
+    // 챕터/도전 클리어
+    const chLines = [];
+    if (d.clears) chLines.push('🏢 1챕터: ' + d.clears + '회');
+    if (d.clearsCh2) chLines.push('🚇 2챕터: ' + d.clearsCh2 + '회');
+    if (d.clearsCh3) chLines.push('🏬 3챕터: ' + d.clearsCh3 + '회');
+    if (d.clearsCh4) chLines.push('🌃 4챕터: ' + d.clearsCh4 + '회');
+    const superLines = Object.entries(d.superClears || {}).sort().map(([k, v]) => `🌟 도전 ${k}: ${v}회`);
+    // 장비
+    const eqSlotNames = { weapon: '⚔️ 무기', armor: '🛡️ 방어구', shoes: '👟 신발', acc: '💍 액세서리' };
+    const eqLines = Object.entries(d.equipSlots || {}).filter(([_,v])=>v).map(([slot, id]) => {
+      const e = EQUIP[id]; if (!e) return '';
+      const t = TIER_INFO[e.tier];
+      const lv = (d.equipLv||{})[id] || 1;
+      return `<div class="stat" style="padding:2px 0"><span>${eqSlotNames[slot]}</span><b style="color:${t.col}">${e.ico} ${e.name} [${t.name}] Lv.${lv}</b></div>`;
+    }).filter(Boolean);
+    // 보유 장비
+    const eqInv = Object.entries(d.equipInv || {}).slice(0, 20);
+    // 펫
+    const pets = Object.entries(d.pets || {});
+    const activePetId = d.activePet;
+    // 스킨
+    const skinName = SKINS[d.skinEquipped || 'default'] ? SKINS[d.skinEquipped || 'default'].name : '기본';
+    // 스킬 트리
+    const skillLevels = d.skillLevels || {};
+    const skillUsed = Object.values(skillLevels).reduce((a,b)=>a+b,0);
+
+    area.innerHTML = `
+      <div class="card">
+        <div class="row" style="gap:10px;align-items:center">
+          <img src="${d.avatar || u.avatar || emojiAvatar('👔')}" style="width:64px;height:64px;border-radius:50%;border:3px solid #ffd84a">
+          <div style="flex:1">
+            <h3 style="margin:0;color:#ffd84a">${d.nick || nick} <span class="small">#${String(d.num||u.num||0).padStart(4,'0')}</span></h3>
+            <p class="small">${d.created ? '가입: ' + new Date(d.created).toLocaleDateString('ko-KR') : ''}</p>
+            <p class="small">최근 접속: ${u.lastActive ? new Date(u.lastActive).toLocaleString('ko-KR') : '-'}</p>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h3>📊 전적</h3>
+        <div class="stat"><span>⭐ K-직장인 별</span><b>${'★'.repeat(d.star||0)}${'☆'.repeat(6-(d.star||0))}</b></div>
+        <div class="stat"><span>📈 업그레이드</span><b>Lv.${d.upLv||0}</b></div>
+        <div class="stat"><span>👗 스킨</span><b>${skinName}</b></div>
+        <div class="stat"><span>🏆 업적</span><b>${ach}/${Object.keys(ACHIEVEMENTS).length}</b></div>
+        <div class="stat"><span>⏱️ 총 플레이 시간</span><b>${Math.floor((st.totalPlayTime||0)/60)}분</b></div>
+        <div class="stat"><span>👾 총 처치</span><b>${(st.totalKills||0).toLocaleString('ko-KR')}마리</b></div>
+        <div class="stat"><span>🎮 총 플레이</span><b>${st.plays||0}회</b></div>
+      </div>
+      <div class="card">
+        <h3>💰 자원</h3>
+        <div class="stat"><span>🪙 코인</span><b>${fmt(d.coins||0)}</b></div>
+        <div class="stat"><span>💵 돈</span><b>${fmt(d.worm||0)}</b></div>
+        <div class="stat"><span>🍖 먹이</span><b>${fmt(d.food||0)}</b></div>
+        <div class="stat"><span>💎 보석</span><b>${fmt(d.gem||0)}</b></div>
+        <div class="stat"><span>🔨 망치</span><b>${fmt(d.hammer||0)}</b></div>
+        <div class="stat"><span>🧩 퍼즐</span><b>${fmt(d.puzzle||0)}</b></div>
+        <div class="stat"><span>🔸 스킬 포인트</span><b>${fmt(d.skillPts||0)} (사용 ${skillUsed})</b></div>
+      </div>
+      <div class="card">
+        <h3>🏢 클리어 기록</h3>
+        ${chLines.length ? chLines.map(l => '<p class="small">'+l+'</p>').join('') : '<p class="small" style="color:#666">아직 클리어 없음</p>'}
+        ${superLines.length ? '<h4 style="margin-top:6px;color:#ffd84a;font-size:12px">🌟 도전</h4>' + superLines.map(l => '<p class="small">'+l+'</p>').join('') : ''}
+      </div>
+      <div class="card">
+        <h3>🎽 착용 장비</h3>
+        ${eqLines.length ? eqLines.join('') : '<p class="small" style="color:#666">착용 장비 없음</p>'}
+      </div>
+      ${eqInv.length ? `<div class="card"><h3>📦 보유 장비 (${eqInv.length}종${Object.keys(d.equipInv||{}).length > 20 ? '+' : ''})</h3>${eqInv.map(([id, n]) => {
+        const e = EQUIP[id]; if (!e) return '';
+        const t = TIER_INFO[e.tier];
+        const lv = (d.equipLv||{})[id] || 1;
+        return `<div class="stat" style="padding:2px 0;font-size:11px"><span style="color:${t.col}">${e.ico} ${e.name}</span><b>x${n} Lv.${lv}</b></div>`;
+      }).filter(Boolean).join('')}</div>` : ''}
+      <div class="card">
+        <h3>🐾 펫 (${pets.length}마리)</h3>
+        ${pets.length ? pets.map(([pid, pd]) => {
+          const p = PETS[pid]; if (!p) return '';
+          const rar = {common:'#8f8',rare:'#4af',epic:'#c5f',legend:'#ffd84a',myth:'#e060ff'}[p.rarity] || '#8f8';
+          return `<div class="stat" style="padding:2px 0;font-size:12px"><span>${p.ico} <b style="color:${rar}">${p.name}</b> ${activePetId===pid?'<span style="color:#7f7">[활성]</span>':''}</span><b>Lv.${pd.level||1}</b></div>`;
+        }).filter(Boolean).join('') : '<p class="small" style="color:#666">펫 없음</p>'}
+      </div>
+      <div class="card">
+        <h3>🌳 스킬 트리</h3>
+        ${Object.keys(skillLevels).length ? Object.entries(skillLevels).map(([k, v]) => {
+          const sk = SKILL_TREE[k]; if (!sk) return '';
+          return `<div class="stat" style="padding:2px 0;font-size:12px"><span>${sk.ico} ${sk.name}</span><b>Lv.${v}/${sk.max}</b></div>`;
+        }).filter(Boolean).join('') : '<p class="small" style="color:#666">스킬 없음</p>'}
+      </div>`;
+  } catch (e) { area.innerHTML = '<p class="small" style="color:#e55">❌ ' + e.message + '</p>'; }
+}
+
+document.getElementById('admOnline').addEventListener('click', () => {
+  hideOv('ovAdmin'); showOv('ovOnlineList'); renderOnlineList();
 });
+document.getElementById('onlineBack').addEventListener('click', () => { hideOv('ovOnlineList'); showOv('ovAdmin'); });
+document.getElementById('onlineRefresh').addEventListener('click', renderOnlineList);
+document.getElementById('onlineDelAll').addEventListener('click', async () => {
+  const btn = $('#onlineDelAll');
+  if (!_onlineDelAllArm) { _onlineDelAllArm = true; btn.textContent = '진짜? 다시 누르면 삭제'; setTimeout(() => { _onlineDelAllArm = false; if (btn) btn.textContent = '🗑️ 전체 삭제'; }, 3000); return; }
+  try { const d = await getDirectoryBin(false); if (d) { await apiUpdate(d.id, { users: {} }); toast('전체 삭제 완료'); _onlineDelAllArm = false; btn.textContent = '🗑️ 전체 삭제'; renderOnlineList(); } } catch (e) { toast('❌ ' + e.message); }
+});
+document.getElementById('profDetailBack').addEventListener('click', () => { hideOv('ovProfileDetail'); showOv('ovOnlineList'); renderOnlineList(); });
 
 // 게스트 모드
 let GUEST = false;
